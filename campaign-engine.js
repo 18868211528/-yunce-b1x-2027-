@@ -7,7 +7,7 @@
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.CampaignEngine = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function createEngine() {
   'use strict';
 
   const MEDIA = new Set(['bus', 'metro']);
@@ -345,5 +345,5 @@
     return base;
   }
 
-  return { validate, quote, plan, checkSelection, summarize, quantity };
+  return { validate, quote, plan, checkSelection, summarize, quantity, createEngine };
 });

@@ -17,6 +17,7 @@
   let toastTimer, revision = 0, aiEverSucceeded = false, aiReceipt = null, serviceHealth = null;
   const build = globalThis.CAMPAIGN_BUILD || {};
   let planning = P.defaults(), executionMode = false;
+  let strategies;
   const stamp = value => value ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }) : '未记录';
 
   function toast(message) {
@@ -111,10 +112,7 @@
     for (const key of Object.keys(planning)) if ($('#' + key)) $('#' + key).value = key === 'executionReserve' ? planning[key] / 10000 : planning[key];
   }
   function runPlan(showToast = true) {
-    let constraints = {};
-    if (executionMode) { try { constraints = { maxBusUnits: P.execution(brief, {busUnits:0,metroUnits:0}, planning).maxBusUnits, spendLimit: brief.budget - planning.executionReserve }; } catch {} }
-    const result = E.plan(data, brief, excluded, constraints);
-    if (executionMode) result.method += '；已加入团队施工产能与执行预留约束';
+    const result = P.strategyPlan(E, data, brief, excluded, planning, executionMode);
     lastPlan = result;
     selection = result.selection;
     invalidate();
@@ -251,6 +249,10 @@
     $('#exportButton').disabled = !result.feasible || !brandMatches();
     $('#exportButton').title = result.errors.slice(0, 4).join('；') || (!result.quantity ? '尚无可成案组合' : '');
     renderAnchors(); renderMatrix(result); renderAllocation(result); renderInventory(); renderEvidence(); renderProgress();
+    strategies = brandMatches() ? P.strategyComparison(E, data, brief, excluded, planning) : null;
+    const comparison = strategyComparisonHTML(strategies, brief, planning, 'workbench', selectedStrategy());
+    $('#workspaceComparison').innerHTML = comparison;
+    $('#planningComparison').innerHTML = comparison;
     if ($('#planningReport')) $('#planningReport').innerHTML = planningReport(result);
     if (baseline) {
       const low = result.low !== null && baseline.low !== null ? result.low - baseline.low : null, high = result.high !== null && baseline.high !== null ? result.high - baseline.high : null;
@@ -260,6 +262,56 @@
     if ($('#proposal')?.classList.contains('active')) renderProposal();
   }
 
+  function selectedStrategy() {
+    const key = executionMode ? 'schedule' : 'budget';
+    const automatic = strategies?.[key]?.selection;
+    if (!automatic || Object.keys(automatic).length !== Object.keys(selection).length) return null;
+    return Object.keys(automatic).every(id => automatic[id] === E.quantity(selection, id)) ? key : null;
+  }
+  // Used unchanged by the standalone customer document, with the same planning engine.
+  function strategyComparisonHTML(pair, context, cfg, view, selected) {
+    const explainer = view === 'snapshot' ? '导出时的两种自动建议，供对照正文采用的组合。' :
+      view === 'client' ? '随试算预算重新计算。采用建议会填入下方调整表。' :
+      '同一份库存与门店覆盖依据。采用建议会替换当前手选数量。';
+    const header = '<header><h3>双方案对比</h3><p>' + explainer + '</p></header>';
+    if (!pair) return '<section class="panel strategy-comparison">' + header + '<p>请先导入与客户匹配的门店和覆盖资料。</p></section>';
+    function card(key) {
+      const option = pair[key], isSchedule = key === 'schedule';
+      const title = isSchedule ? '档期优先' : '预算优先';
+      const label = isSchedule ? '扣除执行预留，按最低共同发布天数配置公交' + (context.mediaTypes.includes('metro') ? '；地铁工期待核' : '') : '先覆盖门店，再按预算与库存增加媒介数量';
+      let content = '<p class="strategy-empty">' + esc(option.reason || '') + '</p>';
+      if (option.result) {
+        const r = option.result, x = option.window;
+        const days = x.metroPending ? '待核' : x.publishDays + ' 天';
+        const status = x.metroPending ? '地铁施工待核' : x.feasible ? '达到目标' : '未达目标';
+        const cost = wan(r.low) + '–' + wan(r.high) + ' 万元';
+        const uptake = '<span data-metric="buses">' + r.busUnits + ' 辆</span>' + (r.metroUnits ? ' / ' + r.metroUnits + ' 点' : '');
+        let timeline = '';
+        if (!x.metroPending) {
+          const before = Math.min(x.days, x.upNights + cfg.weatherBuffer);
+          const band = (n, cls) => n ? '<i class="' + cls + '" style="width:' + (n / x.days * 100) + '%"></i>' : '';
+          timeline = '<div class="strategy-timeline" aria-hidden="true">' + band(before, 'setup') + band(x.publishDays, 'on-air') + band(x.days - before - x.publishDays, 'setup') + '</div>';
+        }
+        const dates = x.metroPending ? '含地铁点位，整组共同窗口待核。' : x.publishDays ? '共同在刊 ' + x.releaseStart.slice(5) + ' 至 ' + x.releaseEnd.slice(5) : '当前组合没有共同在刊日';
+        const work = x.metroPending ? '' : '<small>上刊 ' + x.upNights + ' 夜 · 下刊 ' + x.downNights + ' 夜 · 缓冲共 ' + x.bufferNights + ' 夜</small>';
+        content = '<div class="strategy-figures"><div><span>公交配置' + (r.metroUnits ? ' / 地铁' : '') + '</span><b>' + uptake + '</b></div><div><span>共同发布</span><b data-metric="days">' + days + '</b></div></div>' +
+          timeline + '<div class="strategy-window"><span>' + dates + '</span><em class="' + (x.feasible ? 'pass' : 'watch') + '">' + status + '</em></div>' + work +
+          '<dl class="strategy-facts"><div><dt>刊例与制作</dt><dd data-metric="cost">' + cost + '</dd></div><div><dt>锚点匹配</dt><dd data-metric="coverage">' + r.coveredAnchorIds.length + ' / ' + context.anchorIds.length + '</dd></div></dl>';
+        if (view !== 'snapshot') content += '<button type="button" class="btn small" data-adopt-strategy="' + key + '">采用' + title + '</button>';
+      }
+      const marker = selected === key ? '<span class="strategy-selected">当前组合</span>' : '';
+      return '<article class="strategy-card ' + key + '" data-strategy-card="' + key + '"><h4>' + title + marker + '</h4><p>' + label + '</p>' + content + '</article>';
+    }
+    const a = pair.budget, b = pair.schedule;
+    let conclusion = '';
+    if (a.result && b.result && !a.window.metroPending && !b.window.metroPending) {
+      const fewer = a.result.busUnits - b.result.busUnits, gained = b.window.publishDays - a.window.publishDays;
+      if (fewer > 0 && gained > 0) conclusion = '采用档期优先，公交减少 ' + fewer + ' 辆，全部车辆同时在刊的时间增加 ' + gained + ' 天。';
+      else if (fewer === 0 && gained === 0) conclusion = '按当前设置，两种策略给出相同的公交数量与共同发布天数。';
+    }
+    return '<section class="panel strategy-comparison">' + header + '<div class="strategy-grid">' + card('budget') + card('schedule') + '</div>' +
+      (conclusion ? '<p class="strategy-decision">' + conclusion + '</p>' : '') + '<p class="strategy-assumptions">按 ' + wan(context.budget) + ' 万元、' + context.months + ' 个计费月测算。上刊 ' + cfg.upCapacity + ' 辆/夜，下刊 ' + cfg.downCapacity + ' 辆/夜，两端各留 ' + cfg.weatherBuffer + ' 夜；目标至少 ' + cfg.minPublishDays + ' 天，执行预留 ' + wan(cfg.executionReserve) + ' 万元。施工条件待供应商确认。</p></section>';
+  }
   function hypothesisRows(result) {
     const x = P.execution(brief, result, planning);
     return [
@@ -278,7 +330,7 @@
   function planningReport(result) {
     if (!brandMatches()) return '<section class="panel"><h2>对应客户证据待接入</h2><p>请先导入匹配品牌的门店与覆盖资料；不沿用原品牌的假设书或执行结论。</p></section>';
     try { const x = P.execution(brief, result, planning), c = P.costs(result, brief.months, planning);
-    const scenarios = [100,200,500].map(w => { const b = {...brief,budget:w*10000}, p = E.plan(data,b,excluded,executionMode ? {maxBusUnits:P.execution(b,{busUnits:0,metroUnits:0},planning).maxBusUnits,spendLimit:b.budget-planning.executionReserve} : {}), r = E.summarize(data,p.selection,b); return {w,r,x:P.execution(b,r,planning)}; });
+    const scenarios = [100,200,500].map(w => { const b = {...brief,budget:w*10000}, p = P.strategyPlan(E,data,b,excluded,planning,executionMode), r = E.summarize(data,p.selection,b); return {w,r,x:P.execution(b,r,planning)}; });
     const largest = [...result.rows].sort((a,b) => (b.high || 0) - (a.high || 0))[0];
     const scenarioTable = '<div class="table-wrap"><table><thead><tr><th>同一证据链预算</th><th>车辆 / 资源</th><th>已知费用</th><th>地标映射</th><th>共同发布窗口*</th></tr></thead><tbody>' + scenarios.map(v => '<tr><td>' + v.w + '万元</td><td>' + v.r.busUnits + '辆 / ' + v.r.resourceCount + '条</td><td>' + interval(v.r.low,v.r.high) + '</td><td>' + v.r.coveredAnchorIds.length + '/' + brief.anchorIds.length + '</td><td>' + v.x.publishDays + '天 · ' + (v.x.feasible ? '达到设定最低天数' : '需调整执行条件') + '</td></tr>').join('') + '</tbody></table></div>';
     return hypothesisHTML(result) +
@@ -301,7 +353,7 @@
     const brandIntro = data.brand.brandUnderstanding || '以有公开来源的上海线下门店作为需求锚点，将' + brief.audience + '与门店周边媒介组织在同一条策略链路中。门店地理信息来自品牌页面，线路覆盖关系来自比赛平台。';
     const brandSources = data.brand.brandSources.map(source => '<li>' + link(source.url, source.title || '品牌公开来源') + (source.use ? '<small>' + esc(source.use) + '</small>' : '') + '</li>').join('');
     return '<article class="proposal-doc"><header class="proposal-hero"><div class="eyebrow">YUNCE · 2027 MEDIA PROPOSAL</div><span class="chip ' + (result.feasible ? 'green' : 'amber') + '">' + (result.feasible ? '已知口径上界预算内 · 待商务确认' : '资料与策略框架 · 尚无完整可执行报价') + '</span><h2>' + esc(planning.clientAlias) + '<br>' + esc(brief.campaign || '上海户外媒介投放方案') + '</h2><div class="proposal-meta"><span>' + esc(brief.industry) + '</span><span>' + esc(brief.start) + ' — ' + esc(brief.end) + '</span><span>' + brief.months + ' 个计费月（业务确认输入）</span><span>预算 ' + wan(brief.budget) + ' 万元</span></div></header><div class="proposal-note">策划性质：' + esc(data.brand.campaignStatus || '团队策划假设，非品牌已公布活动') + '。' + esc(COMMERCIAL) + '</div><div class="metrics"><div><span>刊例费用区间</span><strong>' + (result.low === null || result.high === null ? '待报价' : wan(result.low) + '–' + wan(result.high)) + '<em>' + (result.high === null ? '' : '万元') + '</em></strong><small>不是含税全包精确报价</small></div><div><span>所选门店锚点匹配</span><strong>' + result.coveredAnchorIds.length + '<em>/ ' + brief.anchorIds.length + ' 个</em></strong><small>不是独立触达人数</small></div><div><span>物理媒介配置</span><strong>' + result.busUnits + '<em>辆公交</em></strong><small>' + result.metroUnits + ' 个地铁点位 · ' + result.resourceCount + ' 条资源</small></div></div>' +
-      planningReport(result) + '<section class="proposal-section"><h3>公开研究样本与策略依据</h3><p>' + esc(brandIntro) + '</p><p>本次策略人群：' + esc(brief.audience) + '。campaign 文案及传播方向由参赛团队策划，不代表客户委托或品牌已公布计划。</p><ul class="proposal-sources">' + brandSources + '</ul></section>' +
+      strategyComparisonHTML(strategies, brief, planning, 'snapshot', selectedStrategy()) + planningReport(result) + '<section class="proposal-section"><h3>公开研究样本与策略依据</h3><p>' + esc(brandIntro) + '</p><p>本次策略人群：' + esc(brief.audience) + '。campaign 文案及传播方向由参赛团队策划，不代表客户委托或品牌已公布计划。</p><ul class="proposal-sources">' + brandSources + '</ul></section>' +
       '<section class="proposal-section"><h3>从门店到媒介的选择逻辑</h3><p>先选择有品牌公开来源的门店/地标，再使用比赛可视化平台的覆盖分析映射线路与点位；逐条核对相同完整档期的红豆可售数量，匹配媒体形式及刊例等级。自动组合先争取新增门店锚点覆盖，覆盖齐后按较低费用上界加量，采用可解释的贪心启发式，不保证全局最优。</p><div class="table-wrap"><table><thead><tr><th>门店 / 商圈</th><th>官网地址与来源</th><th>覆盖匹配情况</th></tr></thead><tbody>' + selectedAnchors.map(anchor => '<tr><td>' + esc(anchor.name) + '<small>' + esc(anchor.cluster || anchor.district) + '</small></td><td>' + esc(anchor.address) + '<small>' + link(anchor.sourceUrl, '品牌门店来源') + esc(anchor.verification) + '</small></td><td>' + (result.coveredAnchorIds.includes(anchor.id) ? '所选媒介有平台覆盖映射' : '当前组合未覆盖') + '<small>' + esc(anchor.coordinateSource || '坐标来源未提供') + '</small></td></tr>').join('') + '</tbody></table></div></section>' +
       '<section class="proposal-section"><h3>媒介组合、排期与区间报价</h3><p>' + esc(aiNarrative?.strategy || explanation(result)) + '</p><p class="quiet">' + (aiNarrative ? '策略文字由 Flash 生成，需人工审阅；库存、数量与报价仍由本地引擎计算。' : '本段为确定性规则摘要，未冒充模型生成。') + '</p><div class="table-wrap"><table><thead><tr><th>线路 / 点位</th><th>媒体 / 等级</th><th>物理数量 / 月数</th><th>月刊例与制作</th><th>本项费用区间</th></tr></thead><tbody>' + (result.rows.map(resource => '<tr><td>' + esc(resource.name) + '<small>' + esc(resource.id) + '</small></td><td>' + mediaName(resource.mediaType) + '<small>' + esc(resource.grade || '待核') + '</small></td><td>' + resource.quantity + unitName(resource.mediaType) + ' × ' + brief.months + '月<small>' + esc(brief.start + ' 至 ' + brief.end) + '</small></td><td>' + interval(resource.price.monthlyLow, resource.price.monthlyHigh) + '/' + unitName(resource.mediaType) + '/月<small>制作：' + interval(resource.price.productionLow, resource.price.productionHigh) + '/' + unitName(resource.mediaType) + '·次</small></td><td>' + interval(resource.low, resource.high) + '</td></tr>').join('') || '<tr><td colspan="5">尚无可成案组合。当前未确认可售的资源不会出现在正式报价清单中。</td></tr>') + '</tbody><tfoot><tr><td colspan="4"><b>已知口径费用区间</b></td><td><b>' + interval(result.low, result.high) + '</b></td></tr></tfoot></table></div><p>计算：物理数量 ×（月刊例 × 计费月数 + 每物理媒体本次制作费）。数量为0时费用为0。换稿、换车、换点或重新施工的额外制作须另行核实；计费月与非整月折算不自行按28/30天推算。</p></section>' +
       '<section class="proposal-section"><h3>库存、价格与覆盖证据</h3><p>数据版本：' + esc(data.version) + '。库存完整查询区间：' + esc(data.inventoryPeriod.start + ' 至 ' + data.inventoryPeriod.end) + '；查询/导出时间：' + esc(data.inventoryPeriod.checkedAt) + '；来源：' + esc(data.inventoryPeriod.source) + '。查询输入不代表已锁定商业档期。</p><div class="table-wrap source-table"><table><thead><tr><th>资源</th><th>可售库存定位</th><th>刊例依据</th><th>门店覆盖依据</th></tr></thead><tbody>' + result.rows.map(resource => {
@@ -434,13 +486,50 @@
     if (!result.feasible || !brandMatches()) throw Error(result.errors.slice(0, 3).join('；') || '请先生成符合库存、报价与预算约束的组合');
     const candidates = exportCandidates();
     // Deliberately no spread of imported records: only public quantities, prices and matching IDs.
-    const payload = { planning: P.settings(planning), periodDays: P.execution(brief, result, planning).days, periodStart: brief.start, periodEnd: brief.end, budget: brief.budget, months: brief.months, anchors: data.anchors.filter(anchor => brief.anchorIds.includes(anchor.id)).map(anchor => ({ id: anchor.id, name: anchor.name })), rows: candidates.map(resource => ({ id: resource.id, name: resource.name, mediaType: resource.mediaType, available: resource.available, coverageAnchorIds: matchingAnchors(resource), price: { monthlyLow: resource.price.monthlyLow, monthlyHigh: resource.price.monthlyHigh, productionLow: resource.price.productionLow, productionHigh: resource.price.productionHigh }, originalQuantity: E.quantity(selection, resource.id) })) };
+    const payload = {
+      version: data.version, inventoryPeriod: data.inventoryPeriod, excluded, mediaTypes: brief.mediaTypes,
+      planning: P.settings(planning), periodDays: P.execution(brief, result, planning).days,
+      periodStart: brief.start, periodEnd: brief.end, budget: brief.budget, months: brief.months,
+      anchors: data.anchors.filter(anchor => brief.anchorIds.includes(anchor.id)).map(anchor => ({id:anchor.id, name:anchor.name})),
+      rows: candidates.map(resource => ({
+        id: resource.id, name: resource.name, mediaType: resource.mediaType, available: resource.available,
+        sourceRef: resource.sourceRef, coverageAnchorIds: matchingAnchors(resource),
+        price: {monthlyLow:resource.price.monthlyLow, monthlyHigh:resource.price.monthlyHigh, productionLow:resource.price.productionLow, productionHigh:resource.price.productionHigh},
+        originalQuantity: E.quantity(selection, resource.id)
+      }))
+    };
     const encoded = JSON.stringify(payload).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const script = `const data=${encoded};
 const $=id=>document.getElementById(id);const money=n=>'¥'+n.toLocaleString('zh-CN');
-function calc(){let low=0,high=0,buses=0,metro=0,complete=true;const covered=new Set();const entered=Number($('clientBudget').value);if(!Number.isInteger(entered)||entered<100||entered>500){$('clientResult').textContent='预算请输入100–500之间的整数万元';$('clientResult').classList.add('error-text');return;}for(let i=0;i<data.rows.length;i++){const r=data.rows[i],input=$('clientQ'+i),q=Number(input.value),cap=r.available===null?0:r.available;if(!Number.isInteger(q)||q<0||q>cap){$('clientResult').textContent='数量必须是0至同档期可售上限之间的整数；未知库存不能增加。';$('clientResult').classList.add('error-text');return;}if(!q){$('clientCost'+i).textContent=money(0);continue;}if(r.mediaType==='bus')buses+=q;else metro+=q;r.coverageAnchorIds.forEach(id=>covered.add(id));const p=r.price,valid=['monthlyLow','monthlyHigh','productionLow','productionHigh'].every(k=>Number.isSafeInteger(p[k])&&p[k]>=0);if(!valid){complete=false;$('clientCost'+i).textContent='报价不完整（未按0补齐）';continue;}const a=q*(p.monthlyLow*data.months+p.productionLow),b=q*(p.monthlyHigh*data.months+p.productionHigh);low+=a;high+=b;$('clientCost'+i).textContent=money(a)+'–'+money(b);}const budget=entered*10000;$('clientResult').textContent='调整后：'+buses+'辆公交 / '+metro+'个地铁点位；匹配'+covered.size+'/'+data.anchors.length+'个锚点；'+(complete?'已知费用区间 '+money(low)+'–'+money(high)+'；'+(high>budget?'上界超预算 '+money(high-budget):'上界余量 '+money(budget-high)):'有报价缺项，无法确认总额和预算余量')+'。税费及其他收费待确认；原方案不随此区更新。';const cfg=data.planning,up=Math.ceil(buses/cfg.upCapacity),down=Math.ceil(buses/cfg.downCapacity),publish=buses>0?Math.max(0,data.periodDays-up-down-2*cfg.weatherBuffer):0,start=new Date(Date.parse(data.periodStart+'T00:00:00Z')+(up+cfg.weatherBuffer)*86400000).toISOString().slice(0,10),end=new Date(Date.parse(data.periodEnd+'T00:00:00Z')-(down+cfg.weatherBuffer)*86400000).toISOString().slice(0,10);$('clientResult').textContent+=' 按团队施工假设：上下刊'+up+'/'+down+'夜，两端共'+2*cfg.weatherBuffer+'夜缓冲，共同发布'+publish+'天'+(publish?'（'+start+'至'+end+'）':'')+'，目标至少'+cfg.minPublishDays+'天；执行预留'+money(cfg.executionReserve)+'后预算占用上界'+money(high+cfg.executionReserve)+'。'+(metro?'地铁施工能力仍待核。':'')+'上方为原始方案快照；本区仅重算，不代表已确认施工或效果。';$('clientResult').classList.toggle('error-text',!complete||high+cfg.executionReserve>budget||publish<cfg.minPublishDays||metro>0);}
+const engine=(${E.createEngine.toString()})(), planner=(${P.createPlanning.toString()})();
+const esc=${esc.toString()}, wan=${wan.toString()};
+${strategyComparisonHTML.toString()}
+const dataset={version:data.version, inventoryPeriod:data.inventoryPeriod, anchors:data.anchors, resources:data.rows};
+let trialBudget, trialPair;
+function refreshClientStrategies() {
+  const amount = Number($('clientBudget').value);
+  if (amount === trialBudget) return;
+  trialBudget = amount;
+  if (!Number.isInteger(amount) || amount < 100 || amount > 500) {
+    trialPair = null;
+    $('clientComparison').textContent = '请输入100–500之间的整数万元以查看两种建议。';
+    return;
+  }
+  const brief = {budget:amount*10000, months:data.months, start:data.periodStart, end:data.periodEnd,
+    mediaTypes:data.mediaTypes, anchorIds:data.anchors.map(anchor => anchor.id)};
+  trialPair = planner.strategyComparison(engine, dataset, brief, data.excluded, data.planning);
+  $('clientComparison').innerHTML = strategyComparisonHTML(trialPair, brief, data.planning, 'client');
+}
+$('clientComparison').addEventListener('click', event => {
+  const key = event.target.closest('button[data-adopt-strategy]')?.dataset.adoptStrategy;
+  const selected = trialPair?.[key]?.selection;
+  if (!selected) return;
+  data.rows.forEach((row, index) => { $('clientQ'+index).value = engine.quantity(selected, row.id); });
+  calc();
+});
+function calc(){refreshClientStrategies();let low=0,high=0,buses=0,metro=0,complete=true;const covered=new Set();const entered=Number($('clientBudget').value);if(!Number.isInteger(entered)||entered<100||entered>500){$('clientResult').textContent='预算请输入100–500之间的整数万元';$('clientResult').classList.add('error-text');return;}for(let i=0;i<data.rows.length;i++){const r=data.rows[i],input=$('clientQ'+i),q=Number(input.value),cap=r.available===null?0:r.available;if(!Number.isInteger(q)||q<0||q>cap){$('clientResult').textContent='数量必须是0至同档期可售上限之间的整数；未知库存不能增加。';$('clientResult').classList.add('error-text');return;}if(!q){$('clientCost'+i).textContent=money(0);continue;}if(r.mediaType==='bus')buses+=q;else metro+=q;r.coverageAnchorIds.forEach(id=>covered.add(id));const p=r.price,valid=['monthlyLow','monthlyHigh','productionLow','productionHigh'].every(k=>Number.isSafeInteger(p[k])&&p[k]>=0);if(!valid){complete=false;$('clientCost'+i).textContent='报价不完整（未按0补齐）';continue;}const a=q*(p.monthlyLow*data.months+p.productionLow),b=q*(p.monthlyHigh*data.months+p.productionHigh);low+=a;high+=b;$('clientCost'+i).textContent=money(a)+'–'+money(b);}const budget=entered*10000;$('clientResult').textContent='调整后：'+buses+'辆公交 / '+metro+'个地铁点位；匹配'+covered.size+'/'+data.anchors.length+'个锚点；'+(complete?'已知费用区间 '+money(low)+'–'+money(high)+'；'+(high>budget?'上界超预算 '+money(high-budget):'上界余量 '+money(budget-high)):'有报价缺项，无法确认总额和预算余量')+'。税费及其他收费待确认；原方案不随此区更新。';const cfg=data.planning,up=Math.ceil(buses/cfg.upCapacity),down=Math.ceil(buses/cfg.downCapacity),publish=buses>0?Math.max(0,data.periodDays-up-down-2*cfg.weatherBuffer):0,start=new Date(Date.parse(data.periodStart+'T00:00:00Z')+(up+cfg.weatherBuffer)*86400000).toISOString().slice(0,10),end=new Date(Date.parse(data.periodEnd+'T00:00:00Z')-(down+cfg.weatherBuffer)*86400000).toISOString().slice(0,10);$('clientResult').textContent+=' 按团队施工假设：上下刊'+up+'/'+down+'夜，两端共'+2*cfg.weatherBuffer+'夜缓冲，'+(metro?'整组共同发布窗口待核，地铁没有已确认的施工产能':'共同发布'+publish+'天'+(publish?'（'+start+'至'+end+'）':''))+'，目标至少'+cfg.minPublishDays+'天；'+(complete?'执行预留'+money(cfg.executionReserve)+'后预算占用上界'+money(high+cfg.executionReserve):'报价有缺项，含预留的预算占用上界待核')+'。'+'上方为原始方案快照；本区仅重算，不代表已确认施工或效果。';$('clientResult').classList.toggle('error-text',!complete||high+cfg.executionReserve>budget||publish<cfg.minPublishDays||metro>0);}
 document.querySelectorAll('#interactive input').forEach(input=>{input.addEventListener('input',calc);input.addEventListener('change',()=>{if(input.id==='clientBudget')input.value=Math.min(500,Math.max(100,Math.round(Number(input.value)||100)));else input.value=Math.min(Number(input.max),Math.max(0,Math.floor(Number(input.value)||0)));calc();});});$('restoreOriginal').onclick=()=>{data.rows.forEach((r,i)=>$('clientQ'+i).value=r.originalQuantity);$('clientBudget').value=data.budget/10000;calc();};$('clientPrint').onclick=()=>window.print();calc();`;
-    const interactive = '<section id="interactive" class="proposal-section"><h3>现场调整与对比</h3><p>本区与上方原始方案独立，调整不会改写原提案。可增减当前媒体类型、门店覆盖与完整查询档期匹配的所有候选，均以已记录的同档期物理可售数量为上限；未知库存不能增加，未知报价不会补0。调整后仍须由业务核定库存与商业条件。</p><div class="inline-actions"><label class="field">预算（万元）<input type="number" id="clientBudget" min="100" max="500" step="1" value="' + brief.budget / 10000 + '"></label><button class="btn" id="restoreOriginal">恢复原组合</button><button class="btn" id="clientPrint">打印 / 保存PDF</button></div><p>计费月数固定为原方案的 ' + brief.months + ' 月，完整档期为 ' + esc(brief.start + ' 至 ' + brief.end) + '；改变档期须回工作台重新查询库存。</p><div class="table-wrap"><table><thead><tr><th>候选媒介 / 公开来源</th><th>可售上限 / 调整数量</th><th>费用区间</th></tr></thead><tbody>' + candidates.map((resource, index) => '<tr><td>' + esc(resource.name) + '<small>' + esc(resource.id) + ' / ' + mediaName(resource.mediaType) + ' / ' + esc(resource.grade) + '</small><small>库存：' + esc(resource.sourceFile || '原文件') + ' / ' + esc(resource.sourceRef) + '</small><small>刊例：' + esc(resource.priceSourceFile || '原文件') + ' / ' + esc(resource.priceSourceRef || '定位未提供') + '</small><small>覆盖：' + esc(coverageDescription(resource)) + '</small></td><td>' + (resource.available === null ? '可售未知' : '最多' + resource.available + unitName(resource.mediaType)) + '<br><input id="clientQ' + index + '" aria-label="' + esc(resource.name) + '数量" type="number" min="0" max="' + (resource.available ?? 0) + '" step="1" value="' + E.quantity(selection, resource.id) + '" ' + (resource.available === null ? 'disabled' : '') + '></td><td id="clientCost' + index + '"></td></tr>').join('') + '</tbody></table></div><p id="clientResult" aria-live="polite"></p></section>';
+    const interactive = '<section id="interactive" class="proposal-section"><h3>现场调整与对比</h3><p>本区与上方原始方案独立，调整不会改写原提案。可增减当前媒体类型、门店覆盖与完整查询档期匹配的所有候选，均以已记录的同档期物理可售数量为上限；未知库存不能增加，未知报价不会补0。调整后仍须由业务核定库存与商业条件。</p><div class="inline-actions"><label class="field">预算（万元）<input type="number" id="clientBudget" min="100" max="500" step="1" value="' + brief.budget / 10000 + '"></label><button class="btn" id="restoreOriginal">恢复原组合</button><button class="btn" id="clientPrint">打印 / 保存PDF</button></div><p>计费月数固定为原方案的 ' + brief.months + ' 月，完整档期为 ' + esc(brief.start + ' 至 ' + brief.end) + '；改变档期须回工作台重新查询库存。</p><div id="clientComparison"></div><div class="table-wrap"><table><thead><tr><th>候选媒介 / 公开来源</th><th>可售上限 / 调整数量</th><th>费用区间</th></tr></thead><tbody>' + candidates.map((resource, index) => '<tr><td>' + esc(resource.name) + '<small>' + esc(resource.id) + ' / ' + mediaName(resource.mediaType) + ' / ' + esc(resource.grade) + '</small><small>库存：' + esc(resource.sourceFile || '原文件') + ' / ' + esc(resource.sourceRef) + '</small><small>刊例：' + esc(resource.priceSourceFile || '原文件') + ' / ' + esc(resource.priceSourceRef || '定位未提供') + '</small><small>覆盖：' + esc(coverageDescription(resource)) + '</small></td><td>' + (resource.available === null ? '可售未知' : '最多' + resource.available + unitName(resource.mediaType)) + '<br><input id="clientQ' + index + '" aria-label="' + esc(resource.name) + '数量" type="number" min="0" max="' + (resource.available ?? 0) + '" step="1" value="' + E.quantity(selection, resource.id) + '" ' + (resource.available === null ? 'disabled' : '') + '></td><td id="clientCost' + index + '"></td></tr>').join('') + '</tbody></table></div><p id="clientResult" aria-live="polite"></p></section>';
     const css = await loadStyles(), title = planning.clientAlias + ' · 2027上海户外投放方案';
     const doc = proposalHTML().replace('<footer class="proposal-foot">', interactive + '<footer class="proposal-foot">');
     return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(title) + '</title><style>' + css + '\nbody{padding:30px 16px}#interactive input{padding:7px;border:1px solid #cad9d1;border-radius:6px;width:100px}#interactive .inline-actions{align-items:center}#interactive .field{margin:0}#interactive p{white-space:normal}.proposal-sources{font-size:13px}.proposal-sources small{display:block}#interactive td{white-space:normal}@media print{body{padding:0}#interactive button{display:none}}</style></head><body class="campaign-studio client-export">' + doc + '<script>' + script + '<\/script></body></html>';
@@ -478,6 +567,16 @@ document.querySelectorAll('#interactive input').forEach(input=>{input.addEventLi
     $('#viewProposal').onclick = () => go('proposal');
     const brandLink = $('a.brand'); if (brandLink) brandLink.addEventListener('click', event => { event.preventDefault(); go('workspace'); });
     $('#optimizeButton').onclick = () => runPlan();
+    for (const id of ['workspaceComparison', 'planningComparison']) {
+      $('#' + id).addEventListener('click', event => {
+        const key = event.target.closest('button[data-adopt-strategy]')?.dataset.adoptStrategy;
+        if (!strategies?.[key]?.result) return;
+        executionMode = key === 'schedule';
+        runPlan(false);
+        toast('当前组合已更新为' + (executionMode ? '档期优先' : '预算优先') + '，客户提案已同步。');
+        $('#' + id).querySelector('[data-adopt-strategy="' + key + '"]')?.focus({preventScroll:true});
+      });
+    }
     $('#hypothesisExport').onclick = exportHypothesis;
     $('#clearExecutionConstraints').onclick = () => { executionMode = false; runPlan(); };
     for (const key of Object.keys(planning)) if ($('#' + key)) $('#' + key).addEventListener('change', () => {
@@ -486,7 +585,7 @@ document.querySelectorAll('#interactive input').forEach(input=>{input.addEventLi
     });
     $('#applyExecutionConstraints').onclick = () => {
       if (!brandMatches()) { toast('请先接入对应客户证据'); return; }
-      const x = P.execution(brief, summary(), planning), spendLimit = brief.budget - planning.executionReserve;
+      const spendLimit = brief.budget - planning.executionReserve;
       if (spendLimit < 0) { toast('执行预留已超过总预算'); return; }
       executionMode = true; runPlan(false); toast('已按产能与内部预留重新组合；实际工期与执行报价仍须确认');
     };

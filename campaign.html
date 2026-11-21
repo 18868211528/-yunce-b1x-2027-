@@ -107,6 +107,7 @@
             <div><span>入选线路 / 点位</span><strong id="resourceMetric">—</strong><small id="unitsDetail">公交按辆，地铁按点</small></div>
           </div>
 
+          <div id="workspaceComparison"></div>
           <section class="panel anchor-panel" aria-labelledby="anchorHeading">
             <div class="panel-heading"><div><h2 id="anchorHeading">先选门店，再选媒介</h2><p>品牌官网门店地址，匹配比赛平台的覆盖查询。</p></div><span class="chip">上海门店锚点</span></div>
             <div id="anchorGrid" class="anchor-grid" aria-label="选择需要覆盖的门店锚点"><div class="empty">正在载入门店与覆盖依据…</div></div>
@@ -144,6 +145,7 @@
         <section class="panel"><h2>施工与预算假设</h2><p>以下默认值是团队演算输入，须供应商确认；文档只说明夜间作业、雨天停工及单晚上限，并未给出具体产能。</p><div class="two-fields"><label class="field">上刊产能（辆/夜）<input id="upCapacity" type="number" min="1" max="500" step="1"></label><label class="field">下刊产能（辆/夜）<input id="downCapacity" type="number" min="1" max="500" step="1"></label><label class="field">每端天气缓冲（夜）<input id="weatherBuffer" type="number" min="0" max="30" step="1"></label><label class="field">最低共同发布（天）<input id="minPublishDays" type="number" min="1" max="365" step="1"></label><label class="field">素材前置（天）<input id="prepDays" type="number" min="1" max="60" step="1"></label><label class="field">执行预算预留（万元）<input id="executionReserve" type="number" min="0" max="500" step="0.1"></label></div><p class="quiet">预留为内部预算额度，不是供应商报价；0表示尚未设置，不能解释成执行免费。上下刊作业均保守放入库存查询区间，额外施工权限不默认存在。</p><button class="btn dark" id="applyExecutionConstraints">按产能与预留重新组合</button></section>
       </div>
       <p><button class="btn" id="clearExecutionConstraints">仅按媒体预算组合</button> 可与加入施工和执行预留约束的结果对比；这两种模式都不代表供应商已经确认。</p>
+      <div id="planningComparison"></div>
       <div id="planningReport"></div>
     </section>
 

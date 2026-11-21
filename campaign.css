@@ -375,3 +375,34 @@
 @media(max-width:1000px){.planning-inputs{grid-template-columns:1fr}.execution-metrics{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){#planningReport>.proposal-section{padding:18px}.campaign-hypothesis th{min-width:105px}.execution-metrics b{font-size:24px}}
 @media print{.execution-metrics{grid-template-columns:repeat(4,1fr)}.execution-metrics b{font-size:20px}}
+.campaign-studio .strategy-comparison {padding:clamp(16px,2.1vw,30px); margin:0; color:var(--ink)}
+#planningComparison, .proposal-doc>.strategy-comparison, #clientComparison {margin:22px 0}
+.strategy-comparison header h3 {margin:0;font-size:21px;line-height:1.4}
+.strategy-comparison header p,.strategy-card>p {margin:4px 0 14px;color:#536966;font-size:13px;line-height:1.55}
+.strategy-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.strategy-card {display:flex;flex-direction:column;min-width:0;padding:clamp(12px,1.4vw,21px);background:#f4f7f6;border:1px solid #cedbd6;border-top:4px solid #839790;border-radius:10px}
+.strategy-card.schedule {background:#eff6ef;border-color:#bfdbca;border-top-color:#217b60}
+.strategy-card h4 {font-size:17px;line-height:1.4;margin:0;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.strategy-selected {font-size:11px;font-weight:500;background:#dce9e0;color:#275241;border-radius:4px;padding:2px 6px}
+.strategy-card>p {margin:5px 0 14px;min-height:2.9em}
+.strategy-figures {display:flex;flex-wrap:wrap;gap:6px 20px}
+.strategy-figures div>span {display:block;color:#506963;font-size:12px}
+.strategy-figures b {display:block;font-size:clamp(19px,1.85vw,30px);letter-spacing:-.04em;line-height:1.4;font-variant-numeric:tabular-nums}
+.strategy-card.schedule .strategy-figures b {color:#125840}
+.strategy-timeline {height:7px;border-radius:5px;overflow:hidden;display:flex;margin:12px 0 6px}
+.strategy-timeline i.setup {background:#bfcac5}
+.strategy-timeline i.on-air {background:#21805f}
+.strategy-window {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:3px 6px;color:#29483b;font-size:12px}
+.strategy-window em {font-style:normal;font-size:11px;padding:1px 6px;border-radius:4px}
+.strategy-window .pass {background:#d8ebd7;color:#1b4c2c}
+.strategy-window .watch {background:#ffebcb;color:#74420b}
+.strategy-card>small {display:block;color:#536966;font-size:11px;margin:5px 0}
+.strategy-facts {margin:8px 0; font-size:13px}
+.strategy-facts>div {display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:2px 6px;border-top:1px solid #d1ddd5;padding:5px 0}
+.strategy-facts dt {color:#526963}
+.strategy-facts dd {margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.strategy-card .btn {margin-top:auto;align-self:flex-start}
+.strategy-comparison .strategy-decision {margin:13px 0 0;font-size:15px;font-weight:650;color:#204e3e}
+.strategy-comparison .strategy-assumptions {margin:8px 0 0;color:#536966;font-size:12px;line-height:1.6}
+@media(max-width:650px) {.strategy-grid{grid-template-columns:1fr}.strategy-card>p{min-height:0}}
+@media print {.strategy-comparison{break-inside:avoid}.strategy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-card button{display:none}.strategy-timeline{print-color-adjust:exact}}

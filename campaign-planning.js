@@ -1,5 +1,5 @@
 /* Campaign assumptions and execution arithmetic. All capacity values are team inputs, not supplier promises. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.CampaignPlanning=api;})(globalThis,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.CampaignPlanning=api;})(globalThis,function createPlanning(){
  'use strict';
  const DAY=86400000;
  const defaults=()=>({clientAlias:'某全国连锁咖啡品牌上海市场',businessGoal:'验证核心门店周边的通勤场景，能否帮助消费者形成“附近有门店、可线下体验”的认知。此为模拟生意需求，尚无客户经营数据。',primaryGoal:'认知',successMeasure:'投前与投后在相同商圈、相同人群口径开展品牌及门店关联认知调查；样本量、基线和提升目标需客户确认。扫码仅作次级观测，不等同增量到店。',upCapacity:6,downCapacity:6,weatherBuffer:2,minPublishDays:14,prepDays:10,executionReserve:0});
@@ -21,5 +21,36 @@
   return {days,upNights:up,downNights:down,bufferNights:2*s.weatherBuffer,publishDays,releaseStart,releaseEnd,maxBusUnits:low,prepStart:iso(start-s.prepDays*DAY),installStart:brief.start,installEnd:up?iso(start+(up-1)*DAY):null,removalStart:down?iso(end-(down-1)*DAY):null,removalEnd:brief.end,feasible:result.busUnits>0&&result.metroUnits===0&&publishDays>=s.minPublishDays,metroPending:result.metroUnits>0,assumptionOnly:true};
  }
  function costs(result,months,raw){const s=settings(raw);let mediaLow=0,mediaHigh=0,productionLow=0,productionHigh=0;for(const r of result.rows){if(!['monthlyLow','monthlyHigh','productionLow','productionHigh'].every(k=>Number.isSafeInteger(r.price[k])))return {complete:false};mediaLow+=r.quantity*months*r.price.monthlyLow;mediaHigh+=r.quantity*months*r.price.monthlyHigh;productionLow+=r.quantity*r.price.productionLow;productionHigh+=r.quantity*r.price.productionHigh;}return{complete:true,mediaLow,mediaHigh,productionLow,productionHigh,reserve:s.executionReserve,envelopeHigh:mediaHigh+productionHigh+s.executionReserve,reserveConfirmed:false};}
- return{defaults,settings,execution,costs};
+ function strategyPlan(engine, dataset, brief, excluded, cfg, scheduleFirst) {
+   if (!scheduleFirst) return engine.plan(dataset, brief, excluded);
+   const spendLimit = brief.budget - cfg.executionReserve;
+   const failed = message => ({selection: Object.create(null), errors: [message], method: '档期优先'});
+   if (spendLimit < 0) return failed('执行预算预留超过总预算，请调整预留。');
+   if (!brief.mediaTypes.includes('bus')) return failed('档期优先需要公交施工产能；地铁施工条件待核。');
+   let maxBusUnits;
+   try {
+     maxBusUnits = execution(brief, {busUnits: 0, metroUnits: 0}, cfg).maxBusUnits;
+   } catch (error) {
+     return failed(error.message);
+   }
+   // The supplied installation/removal capacities only cover bus wraps.
+   const plan = engine.plan(dataset, {...brief, mediaTypes: ['bus']}, excluded, {maxBusUnits, spendLimit});
+   plan.method += '；已加入团队施工产能与执行预留约束';
+   return plan;
+ }
+ function strategyComparison(engine, dataset, brief, excluded, cfg) {
+   function assess(scheduleFirst) {
+     const plan = strategyPlan(engine, dataset, brief, excluded, cfg, scheduleFirst);
+     if (plan.errors.length) return {reason: plan.errors[0]};
+     const result = engine.summarize(dataset, plan.selection, brief);
+     const window = execution(brief, result, cfg);
+     if (!result.feasible) {
+       if (scheduleFirst && !window.maxBusUnits && brief.mediaTypes.includes('bus')) return {reason: '当前档期、产能与最低天数无法容纳一辆公交的上下刊。'};
+       return {reason: scheduleFirst ? '扣除预留后，当前库存、报价和覆盖条件下没有可选组合。' : '当前库存、报价和覆盖条件下没有可选组合。'};
+     }
+     return {selection: plan.selection, result, window};
+   }
+   return {budget: assess(false), schedule: assess(true)};
+ }
+ return{defaults,settings,execution,costs,strategyPlan,strategyComparison,createPlanning};
 });

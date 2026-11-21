@@ -1,8 +1,19 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>云策2027 · 一页纸说明</title><style>body{font:14px/1.65 'Microsoft YaHei',sans-serif;color:#163c36;max-width:790px;margin:35px auto;padding:0 20px}h1{font-size:30px;margin:0}h2{font-size:17px;margin:23px 0 7px;border-bottom:1px solid #ccdcd5;padding-bottom:5px}p{margin:7px 0}small{color:#526c65}table{border-collapse:collapse;width:100%}td,th{text-align:left;border-bottom:1px solid #dde8e3;padding:8px}th{background:#ecf4f0}@page{size:A4;margin:16mm}@media print{body{margin:0;padding:0;font-size:11px}h1{font-size:25px}h2{margin-top:14px;font-size:15px}}</style>
-<h1>云策2027 · 户外媒介提案工作台</h1><p>上海新云传媒命题｜食品饮料 · 星巴克上海门店｜2027年3月</p><small>主题“下一站，附近的一杯”为参赛策划假设，非品牌委托或已公布活动。</small>
-<h2>问题与作品</h2><p>把品牌门店、覆盖线路、同档期可售库存和区间报价串成可解释的投放方案；支持100–500万元现场调整、媒介增减、来源核对、项目保存与独立HTML导出。</p>
-<h2>方案结果与依据</h2><table><tr><th>预算</th><th>公交配置</th><th>已知费用区间</th><th>覆盖锚点</th></tr><tr><td>100万元</td><td>14辆 / 5条线路</td><td>65–100万元</td><td>6 / 6</td></tr><tr><td>200万元</td><td>28辆 / 7条线路</td><td>128–198万元</td><td>6 / 6</td></tr><tr><td>500万元</td><td>71辆 / 14条线路</td><td>321.5–499万元</td><td>6 / 6</td></tr></table><p>六个锚点来自品牌官网地址；500米自有媒体覆盖来自比赛可视化平台；可售取红豆2027-03-01至03-31导出；月刊例与每辆制作费取资料包07表。静态2026台账未用于2027可售，2023历史人流未外推曝光。</p>
-<h2>角色与AI能力</h2><p>单人参赛者承担品牌策略、数据核验、开发和答辩四类职责；AI辅助公开资料研究、代码与测试编写。产品内Flash接口用于解读已核定组合；费用、数量、库存与约束由确定性引擎控制。2026-11-21已完成比赛专户真实Flash调用，HTTP200返回策略；测算金额与数量不变。</p>
-<h2>运行与验证</h2><p>新增可编辑七要素假设书、主目标衡量、上下刊产能与天气缓冲、执行预留和约束重算。离线打开工作台HTML即可演示；双击启动完整版连接Flash及已登录比赛浏览器。27项自动化测试通过，已检查三档预算、数量增减、基线、离线导出、密钥排除与手机布局。完整运行说明见源码README。</p>
-<h2>已知局限与提交状态</h2><p>报价为已知费用区间，税费、折扣、计费月定义及其他收费待确认；库存非锁位。轨迹覆盖不等于步行距离、独立触达或销售效果。地铁候选尚缺具体出口与面积匹配，默认公交单选。完整预置案例仅星巴克，更换品牌须接入对应证据。公交实时重查已实测3月与4月，使用时需Python及已登录比赛浏览器；源码与启动器已提供；B1X正式提交以赛事平台状态为准。</p>
-</html>
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>云策2027 · 一页纸说明</title>
+<style>
+*{box-sizing:border-box}body{max-width:820px;margin:32px auto;padding:0 26px;color:#183c34;font:15px/1.6 "Microsoft YaHei",sans-serif}header{border-top:6px solid #176f5a;padding:19px 0 13px;border-bottom:1px solid #b4c9c0}small,.minor{color:#546f64}h1{font-size:35px;line-height:1.2;margin:7px 0 8px}h2{font-size:19px;margin:19px 0 6px}p{margin:6px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-variant-numeric:tabular-nums}th,td{padding:7px 10px;text-align:left;border-bottom:1px solid #cfddd5}thead th{background:#e5f0e9}tbody th{font-weight:normal;color:#405d51}strong{color:#105642}footer{border-top:1px solid #c0d1c8;padding-top:10px;margin-top:17px;color:#52695f;font-size:12px}.caps{color:#087761;font-size:12px;letter-spacing:1px}.intro{font-size:16px}.pick{background:#edf4eb;border-left:4px solid #4d8969;padding:10px 13px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}.pair p{margin-top:0}@page{size:A4;margin:15mm 17mm}@media print{body{max-width:none;margin:0;padding:0;font-size:10.5pt}h1{font-size:24pt}h2{font-size:13pt;margin:12px 0 4px}header{padding:10px 0}th,td{padding:5px 8px}.intro{font-size:11.5pt}.pair{gap:18px}footer{font-size:9pt}.pick{padding:8px 12px}}@media screen and (max-width:640px){body{padding:0 14px}h1{font-size:28px}.pair{grid-template-columns:1fr;gap:0}th,td{padding:5px 3px}}
+</style></head><body>
+<header><div class="caps">上海新云传媒命题 · AI＋办公赛道 · 版本 1.3</div><h1>云策2027 · 户外媒介提案工作台</h1><small>食品饮料行业　｜　单人队伍　｜　公开研究样本　星巴克上海门店</small></header>
+<h2>客户要投一个月，有多少天能同时在刊？</h2><p class="intro">销售输入客户目标、门店、预算和排期，工作台从同档期可售库存中匹配公交线路。客户可以同时看见增加车辆带来的费用变化，以及分批上下刊占用的时间。</p>
+<h2>同一个500万元预算，两种可解释的选择</h2><p>模拟案例采用2027年3月整月库存和6个门店锚点，按一个月计费。示例假设上下刊各6辆/夜，两端各留2夜缓冲，执行预留为0，最低共同发布期为14天。</p>
+<table><thead><tr><th>采购决策</th><th>预算优先</th><th>档期优先</th></tr></thead><tbody>
+<tr><th>已选公交 / 线路</th><td><strong>71辆</strong> / 14条</td><td><strong>36辆</strong> / 8条</td></tr>
+<tr><th>已知费用区间</th><td>321.5–499万元</td><td>164–254万元</td></tr>
+<tr><th>上刊与下刊作业</th><td>各12夜</td><td>各6夜</td></tr>
+<tr><th>共同在刊窗口</th><td>3月15–17日 · <strong>3天</strong></td><td>3月9–23日 · <strong>15天</strong></td></tr>
+<tr><th>覆盖锚点</th><td>6 / 6</td><td>6 / 6</td></tr></tbody></table>
+<p class="pick">若客户要求至少两周同时在刊，选择36辆。31天减去两个6夜作业段和4夜缓冲，得到15天。客户可以修改产能、最低天数与预留费用，再看两案如何变化。</p>
+<h2>证据从哪里来</h2><p>品牌官网确认6个门店地标；比赛可视化平台查询周边500米自有媒体覆盖，形成54条公交候选；51条精确匹配红豆3月导出表，43条有可售车辆。费用按脱敏刊例逐辆计入月媒介费与本次制作费。2027年库存使用对应档期的查询快照。</p>
+<div class="pair"><section><h2>评委可以现场做什么</h2><p>离线打开工作台，切换100–500万元预算、增减车辆、查看来源或采用一案。导出独立HTML后，客户可查看原始对比并重新试算。双击完整版启动器可接入比赛Flash及已登录的库存系统。</p></section>
+<section><h2>AI与参赛者各做什么</h2><p>参赛者负责策略、核验、开发与答辩，AI辅助研究和编程。Flash解读已选组合，金额和库存约束由程序校验。比赛专户的真实调用以及3月、4月公交库存同步已在前版记录中验证。</p></section></div>
+<footer>“下一站，附近的一杯”为参赛策划假设。覆盖映射仅说明线路与地标关联；费用、施工能力和锁档情况仍待业务方确认。地铁出口、面积及专价待核。完整案例限上述六个门店，新增行业须补齐独立证据。</footer></body></html>
