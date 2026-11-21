@@ -141,7 +141,7 @@ function buildDataset(inputs) {
     let stockNote;
     if (chosen) stockNote = '红豆按' + inventoryPeriod.start + '至' + inventoryPeriod.end + '完整档期查询，读取时间' + inventoryPeriod.checkedAt + '；空位数' + chosen.available + '辆，来源导出' + busSourceSheet + '第' + chosen.rowNumber + '行。';
     else {
-      stockNote = '未在当前431行公交导出范围内取得唯一精确线路匹配；不等于整个系统不存在该线路，可售、等级与报价保持未知。';
+      stockNote = '未在当前' + (rows.length - 1) + '行公交导出范围内取得唯一精确线路匹配；不等于整个系统不存在该线路，可售、等级与报价保持未知。';
       unresolvedBusRoutes.push(candidate.routeName);
     }
     return {
@@ -155,7 +155,7 @@ function buildDataset(inputs) {
       coverageAnchorIds: [...candidate.coverageAnchorIds], price,
       longitude: null, latitude: null, coordinateSystem: COORDINATE_NOTE,
       sourceFile: busSourceFile,
-      sourceRef: chosen ? busSourceSheet + '!A' + chosen.rowNumber + ':K' + chosen.rowNumber : busSourceSheet + '（431条导出范围内未找到唯一规范化名称精确匹配）',
+      sourceRef: chosen ? busSourceSheet + '!A' + chosen.rowNumber + ':K' + chosen.rowNumber : busSourceSheet + '（' + (rows.length - 1) + '条导出范围内未找到唯一规范化名称精确匹配）',
       sourceUrl: busQuery.pageUrl || 'https://flairmedia.com.cn:881/medium/inventory/inventory-bus',
       priceSourceFile: '07-媒体刊例价.xlsx',
       priceSourceRef: rate ? pricingRules.source.sheet + '!' + rate.sourceRef : '未取得对应普通公交等级/车型的适用刊例；未套用其他等级或特殊旅游线价格',
@@ -173,7 +173,8 @@ function buildDataset(inputs) {
     };
   });
   const metroPeriod = metroQuery ? checkedPeriod(metroQuery) : { ...inventoryPeriod };
-  if (metroPeriod.start !== inventoryPeriod.start || metroPeriod.end !== inventoryPeriod.end) throw new Error('地铁与公交查询档期不一致');
+  // Keep the original metro date as evidence. A bus refresh must never relabel old metro stock.
+  const metroPeriodMismatch = metroPeriod.start !== inventoryPeriod.start || metroPeriod.end !== inventoryPeriod.end;
   for (const [index, candidate] of (coverageNormalized.separateCandidates || []).entries()) {
     const evidence = candidate.coverageEvidence.map(cleanCoverageEvidence);
     resources.push({
@@ -190,7 +191,7 @@ function buildDataset(inputs) {
       coverageSourceRef: evidence.map(item => item.sourceRef).join('；'), coverageSourceUrl: 'https://flairmedia.com.cn:38880/',
       checkedAt: evidence[0]?.checkedAt || metroPeriod.checkedAt,
       inventoryPeriod: { ...metroPeriod },
-      evidence: '平台只返回' + candidate.routeName + '-' + candidate.stationName + '线路/最近站点层候选。需匹配具体出口、面积、2027完整档期可售及专门点位价格；站点处于500米内不能证明具体出口在500米内。已取得地铁库存导出' + metroSourceFile + '，但本条尚未完成精确点位关联，因此可售与四项价格均保持未知，不进入自动成案。',
+      evidence: (metroPeriodMismatch ? '地铁资料仍为' + metroPeriod.start + '至' + metroPeriod.end + '，与当前公交查询不同档期，不沿用为当前库存。' : '') + '平台只返回' + candidate.routeName + '-' + candidate.stationName + '线路/最近站点层候选。需匹配具体出口、面积、2027完整档期可售及专门点位价格；站点处于500米内不能证明具体出口在500米内。已取得地铁库存导出' + metroSourceFile + '，但本条尚未完成精确点位关联，因此可售与四项价格均保持未知，不进入自动成案。',
       pricingNote: '具体出口、制作面积、可售与适用刊例均待核实；不可按0元填补。',
       coverageEvidence: evidence,
       requiresExactExitMatch: true, originalCoverageAnchorIds: [...candidate.coverageAnchorIds],
@@ -264,7 +265,7 @@ function buildDataset(inputs) {
     ],
     commercialTerms: { ...pricingRules.commercialTerms, warning: COMMERCIAL_NOTE },
     limitations: [
-      '当前是按实际查询时刻取得的2027-03完整档期库存快照，不代表已锁位；日期变化或正式采购前必须重新核对。',
+      '当前公交库存是按实际查询时刻取得的' + inventoryPeriod.start + '至' + inventoryPeriod.end + '完整档期快照，不代表已锁位；地铁保留各自原始档期，日期变化或正式采购前必须重新核对。',
       '只将54条覆盖命中公交候选与实际导出范围精确关联，未匹配旅游线不进行模糊替换。',
       busTotal === null ? '公交系统总量未记载。' : '列表总数' + busTotal + '与实际导出' + (rows.length - 1) + '行存在差异，不声称全量库存已接入。',
       '地图中心是品牌门店地址对应的建筑/商场/地标定位，不是店门精确测绘；坐标使用平台百度地图原始口径，未单独确证坐标系、未作转换。',

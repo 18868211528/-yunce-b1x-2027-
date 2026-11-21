@@ -1,1 +1,1 @@
-const {chromium}=require('playwright');(async()=>{const c=await chromium.launchPersistentContext(__dirname+'/.browser-profile',{channel:'msedge',headless:false,viewport:null,args:['--remote-debugging-port=9228','--remote-debugging-address=127.0.0.1']});const p=c.pages()[0]||await c.newPage();await p.goto('https://flairmedia.com.cn:881/index');console.log('请在此独立浏览器完成比赛账号登录，保持窗口打开。');await new Promise(r=>c.on('close',r));})().catch(e=>{console.error(e.message);process.exitCode=1});
+require('./start-workbench.cjs');

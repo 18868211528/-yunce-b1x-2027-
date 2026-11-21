@@ -13,7 +13,9 @@
   const INDUSTRIES = ['银行保险', '食品饮料', '保健品', '私立医院', '乐园（主题公园）'];
   const COMMERCIAL = '刊例区间估算；税费、折扣、计费月定义及其他收费待业务确认。制作费按每辆/每点本次制作计入一次，不重复按月计费。';
   let data, brief, selection = Object.create(null), excluded = [], baseline = null, lastPlan = null, aiNarrative = null;
-  let toastTimer, revision = 0, aiEverSucceeded = false;
+  let toastTimer, revision = 0, aiEverSucceeded = false, aiReceipt = null, serviceHealth = null;
+  const build = globalThis.CAMPAIGN_BUILD || {};
+  const stamp = value => value ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }) : '未记录';
 
   function toast(message) {
     const el = $('#toast');
@@ -203,10 +205,12 @@
       [verified >= data.anchors.length && data.anchors.length ? '✓' : '…', '品牌门店依据', verified + ' 个门店有来源核对记录；2027营业与投放入口仍须上线前复核。', verified + '/' + data.anchors.length + ' 个有据', verified < data.anchors.length || !data.anchors.length],
       [queries >= data.anchors.length && data.anchors.length ? '✓' : '…', '门店覆盖分析', queries + ' 个门店查询有记录。仅采用平台映射，不以地址猜测线路覆盖。', queries + ' 次有据', queries < data.anchors.length || !data.anchors.length],
       [stock ? '✓' : '…', '2027 同档期可售核对', stock + '/' + data.resources.length + ' 条资源具有当前完整查询档期的已知可售数量；查询时间与来源逐条可查。', stock ? '已有同档期输入' : '待同步/导入', !stock],
-      [aiEverSucceeded ? '✓' : '…', '真实 Flash 接口联调', aiEverSucceeded ? '本页面已取得一次真实接口返回；AI仅解释策略，不修改价格与库存。' : '接口已预留；尚未完成真实模型请求验证，当前为规则摘要。', aiEverSucceeded ? '已取得返回' : '未联调', !aiEverSucceeded],
-      ['…', '正式提交与部署', '本工作台不会自动代替队长提交作品，尚未执行赛事提交或对外部署。', '未执行', true]
+      [aiEverSucceeded || build.ai?.passed ? '✓' : '…', '真实 Flash 接口联调', aiEverSucceeded ? '本页面于' + stamp(aiReceipt?.completedAt) + '取得真实接口返回；AI只解释策略，金额仍由引擎计算。' : build.ai?.passed ? '本版本于' + stamp(build.verifiedAt) + '使用比赛专户实测成功。当前页面尚未调用；在线模式填写自己的比赛密钥后可生成解读。' : '连接比赛专户后主动生成解读，当前显示规则摘要。', aiEverSucceeded ? '本页已取得返回' : build.ai?.passed ? '接口已实测' : '待连接', !(aiEverSucceeded || build.ai?.passed)],
+      [build.inventory?.passed ? '✓' : '…', '实时库存同步', build.inventory?.passed ? '本版本已实测3月、4月完整档期查询与导出。仅刷新公交库存，地铁保留原始日期和待核状态；登录失效时保留原数据。' : '需在完整版中登录比赛浏览器，再按当前档期重新查询。', build.inventory?.passed ? '已实测' : '待连接', !build.inventory?.passed],
+      ['↗', '源码与比赛提交', '源码仓库已发布。本地完整版运行状态见下方；B1X提交状态请在赛事平台确认，最终提交由队长操作。', '以平台为准', false]
     ];
     $('#progressSteps').innerHTML = steps.map(([mark, title, body, status, pending]) => '<article class="step ' + (pending ? 'pending' : '') + '"><div class="step-mark">' + mark + '</div><div><h2>' + esc(title) + '</h2><p>' + esc(body) + '</p></div><span class="chip ' + (pending ? 'amber' : 'green') + '">' + esc(status) + '</span></article>').join('');
+    $('#progressSteps').insertAdjacentHTML('beforeend', '<section class="panel"><h2>运行与提交入口</h2><p>' + (location.protocol === 'file:' ? '当前为离线版。需要AI或库存重查时，请先解压交付包，双击“启动完整版.cmd”。' : serviceHealth?.localService ? '本地服务已连接。比赛浏览器：' + (serviceHealth.inventory.browser ? '已连接，登录情况在同步时检查' : '请通过启动器打开') + '；库存读取依赖：' + (serviceHealth.inventory.python && serviceHealth.inventory.dependency ? '已就绪' : '请按说明书安装') + '。' : '正在检查本地服务。') + '</p><div class="inline-actions"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://github.com/18868211528/-yunce-b1x-2027-">打开源码仓库</a><a class="btn dark" target="_blank" rel="noopener noreferrer" href="https://b1x.work/events/competitions/cmp_d76ad4530fe1447d8707d3247ce5c7ad?tab=work">到B1X查看提交</a></div><p>本地运行不等于公网部署，赛事最终状态以B1X显示为准。</p></section>');
   }
   function render() {
     const result = summary(), known = data.resources.filter(resource => periodMatches(resource) && resource.available !== null).length;
@@ -344,7 +348,7 @@
       if (!response.ok) throw Error(body.error || 'Flash 接口未成功返回');
       if (requestRevision !== revision) { toast('输入或组合已经变化，未应用过期的AI解读'); return; }
       if (typeof body.strategy !== 'string' || !body.strategy.trim()) throw Error('模型没有返回可用的策略文字');
-      aiNarrative = { strategy: body.strategy.slice(0, 6000) }; aiEverSucceeded = true; render(); toast('已取得模型解读，请人工审阅；计算金额未被AI修改');
+      aiNarrative = { strategy: body.strategy.slice(0, 6000) }; aiEverSucceeded = true; aiReceipt = body.receipt || { completedAt: new Date().toISOString() }; render(); toast('已取得模型解读，请人工审阅；计算金额未被AI修改');
     } catch (error) { toast(error.name === 'TimeoutError' ? 'Flash请求超时，规则摘要与当前组合已保留' : error.message); }
     finally { button.disabled = false; button.textContent = '使用 Flash 生成策略解读'; }
   }
@@ -477,6 +481,11 @@ document.querySelectorAll('#interactive input').forEach(input=>{input.addEventLi
     data = normalizeData(globalThis.CAMPAIGN_DATA);
     brief = defaultBrief(data);
     bind(); syncFields(); runPlan(false);
+    if (location.protocol === 'file:') {
+      $('#syncStatus').textContent = '当前为离线版：导入、模板与方案调整可直接使用。实时同步请解压整个交付包，双击“启动完整版.cmd”，在打开的红豆标签页登录后再操作。';
+    } else {
+      fetch('/api/health').then(r => { if (!r.ok) throw Error('health'); return r.json(); }).then(health => { serviceHealth = health; renderProgress(); $('#syncStatus').textContent = health.inventory.browser ? '已连接本机比赛浏览器；请确认红豆标签页已登录。同步只刷新公交库存，地铁仍保留原始日期和待核状态。' : '本地服务已运行。请用“启动完整版.cmd”打开比赛浏览器并登录红豆，再同步公交库存。'; }).catch(() => { $('#syncStatus').textContent = '无法连接本地服务。请通过启动完整版.cmd运行；当前离线数据和组合已保留。'; });
+    }
     if (['workspace', 'proposal', 'sources', 'progress'].includes(location.hash.slice(1))) go(location.hash.slice(1));
     // QA surface contains public project state only, never key or model response.
     globalThis.CampaignApp = { getProject: () => structuredClone(project()), getSummary: () => structuredClone(summary()), runPlan, importDataset: applyDataset, buildExportHTML, exportCSV, showPage: go };

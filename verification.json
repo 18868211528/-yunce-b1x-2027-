@@ -1,0 +1,80 @@
+{
+  "version": "1.1.0",
+  "verifiedAt": "2026-11-21T07:46:25.578Z",
+  "timezone": "Asia/Shanghai",
+  "ai": {
+    "provider": "B1X比赛专户",
+    "model": "deepseek-v4.1-flash-1017",
+    "httpStatus": 200,
+    "strategyCharacters": 567,
+    "before": {
+      "busUnits": 28,
+      "upperCostCny": 1980000
+    },
+    "after": {
+      "busUnits": 28,
+      "upperCostCny": 1980000
+    },
+    "method": "真实浏览器页面→本地服务→官方模型接口，非模拟响应"
+  },
+  "inventory": {
+    "method": "已登录红豆比赛浏览器→清除旧筛选→完整日期查询→导出Excel→解析校验→页面应用",
+    "successfulPeriods": [
+      {
+        "start": "2027-03-01",
+        "end": "2027-03-31",
+        "checkedAt": "2026-11-21T07:45:13.957Z",
+        "httpStatus": 200
+      },
+      {
+        "start": "2027-04-01",
+        "end": "2027-04-30",
+        "checkedAt": "2026-11-21T07:46:25.578Z",
+        "httpStatus": 200
+      }
+    ],
+    "scope": "仅公交库存；门店覆盖复用来源记录；地铁保留原3月日期且不可售与价格待核",
+    "negativeTest": {
+      "freshBrowserNotLoggedIn": "返回400并提示登录，旧方案保留28辆与198万元上界"
+    }
+  },
+  "automatedTests": {
+    "passed": 21,
+    "failed": 0,
+    "browser": [
+      "100/200/500万",
+      "物理数量增减",
+      "基线对比",
+      "模拟响应仅用于界面回归",
+      "密钥不导出",
+      "独立HTML",
+      "跨行业清空覆盖",
+      "390px四页面",
+      "无运行异常"
+    ]
+  },
+  "launcher": {
+    "cleanInstall": "Playwright自动安装成功，服务及Edge均已打开",
+    "privateFilesExcluded": [
+      ".browser-profile",
+      "node_modules",
+      "API密钥",
+      "账号密码",
+      "登录会话"
+    ]
+  },
+  "submission": {
+    "lastObserved": "草稿·未提交",
+    "finalConfirmation": "由队长在B1X操作，包内状态不自动同步"
+  },
+  "deployment": {
+    "local": "http://127.0.0.1:8766",
+    "publicBusinessService": false
+  },
+  "limitations": [
+    "库存快照不是锁档",
+    "刊例为区间，税费与商业条件待确认",
+    "默认完整案例仅星巴克",
+    "地铁具体出口和面积尚待匹配"
+  ]
+}
