@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "verifiedAt": "2026-11-21T07:46:25.578Z",
   "timezone": "Asia/Shanghai",
   "ai": {
@@ -39,7 +39,7 @@
     }
   },
   "automatedTests": {
-    "passed": 21,
+    "passed": 27,
     "failed": 0,
     "browser": [
       "100/200/500万",
@@ -76,5 +76,17 @@
     "刊例为区间，税费与商业条件待确认",
     "默认完整案例仅星巴克",
     "地铁具体出口和面积尚待匹配"
-  ]
+  ],
+  "connectorEvidenceVersion": "1.1.0",
+  "planningRegression": {
+    "hypothesisElements": 7,
+    "hypothesisPdfPages": 1,
+    "capacityAndReservePersist": true,
+    "projectRestore": true,
+    "independentHtmlRecalculatesExecution": true,
+    "defaultSharedDays": 17,
+    "fiveMillionUnconstrainedSharedDays": 3,
+    "constrainedBusUnits": 36,
+    "assumptionOnly": true
+  }
 }

@@ -275,7 +275,7 @@
     return summary;
   }
 
-  function plan(rawDataset, rawBrief, excluded = []) {
+  function plan(rawDataset, rawBrief, excluded = [], constraints = {}) {
     const selection = Object.create(null);
     const excludedStats = { total: 0, eligible: 0, excludedByUser: 0, mediaTypeMismatch: 0, periodMismatch: 0, unknownAvailability: 0, soldOut: 0, missingCoverage: 0, incompletePrice: 0, unitOverBudget: 0, budgetLimited: 0 };
     const base = { selection, errors: [], excludedStats, method: METHOD, coveredAnchorIds: [], uncoveredAnchorIds: [], warnings: [COMMERCIAL_WARNING] };
@@ -285,6 +285,8 @@
     if (result.errors.length) return { ...base, errors: result.errors };
     if (!Array.isArray(excluded) || excluded.some(id => typeof id !== 'string')) return { ...base, errors: ['excluded 须为资源 ID 数组'] };
     const dataset = input.dataset, brief = result.brief, blocked = new Set(excluded), candidates = [];
+    const budgetLimit = constraints.spendLimit ?? brief.budget, busLimit = constraints.maxBusUnits ?? 5000;
+    if (!Number.isSafeInteger(budgetLimit) || budgetLimit < 0 || budgetLimit > brief.budget || !Number.isSafeInteger(busLimit) || busLimit < 0 || busLimit > 5000) return { ...base, errors: ['执行约束的预算或公交数量上限无效'] };
     excludedStats.total = dataset.resources.length;
     for (const resource of dataset.resources) {
       let reason;
@@ -302,14 +304,14 @@
       else candidates.push({ resource, high: unit.high, matches });
     }
     excludedStats.eligible = candidates.length;
-    let spent = 0;
+    let spent = 0, busCount = 0;
     const covered = new Set();
     // First add a single physical unit from the resource with the best new-anchor/cost ratio.
     // Stable tie breaks: more new anchors, lower upper cost, then source order.
     while (covered.size < brief.anchorIds.length) {
       let best = null, bestGain = 0, bestRatio = -1;
       for (const item of candidates) {
-        if (quantity(selection, item.resource.id) >= item.resource.available || spent + item.high > brief.budget) continue;
+        if (quantity(selection, item.resource.id) >= item.resource.available || spent + item.high > budgetLimit || (item.resource.mediaType === 'bus' && busCount >= busLimit)) continue;
         const gain = item.matches.filter(id => !covered.has(id)).length;
         if (!gain) continue;
         const ratio = item.high === 0 ? Infinity : gain / item.high;
@@ -317,6 +319,7 @@
       }
       if (!best) break;
       selection[best.resource.id] = quantity(selection, best.resource.id) + 1;
+      if (best.resource.mediaType === 'bus') busCount++;
       spent += best.high;
       for (const id of best.matches) covered.add(id);
     }
@@ -326,10 +329,11 @@
       const sorted = candidates.map((item, index) => ({ ...item, index })).sort((a, b) => a.high - b.high || a.index - b.index);
       for (const item of sorted) {
         const current = quantity(selection, item.resource.id), stock = item.resource.available - current;
-        const affordable = item.high === 0 ? stock : Math.floor((brief.budget - spent) / item.high);
-        const add = Math.max(0, Math.min(stock, affordable));
+        const affordable = item.high === 0 ? stock : Math.floor((budgetLimit - spent) / item.high);
+        const add = Math.max(0, Math.min(stock, affordable, item.resource.mediaType === 'bus' ? busLimit - busCount : stock));
         if (!add) continue;
         selection[item.resource.id] = current + add;
+        if (item.resource.mediaType === 'bus') busCount += add;
         spent += add * item.high;
       }
     }

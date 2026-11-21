@@ -18,6 +18,7 @@
     <div class="side-section">上海新云传媒 · 企业命题</div>
     <nav aria-label="主导航">
       <button class="nav active" data-page="workspace" aria-label="提案工作台"><span aria-hidden="true">◫</span>提案工作台</button>
+      <button class="nav" data-page="planning" aria-label="需求与执行"><span aria-hidden="true">◎</span>需求与执行</button>
       <button class="nav" data-page="proposal" aria-label="客户方案"><span aria-hidden="true">▤</span>客户方案</button>
       <button class="nav" data-page="sources" aria-label="数据与证据"><span aria-hidden="true">⊞</span>数据与证据</button>
       <button class="nav" data-page="progress" aria-label="交付进度"><span aria-hidden="true">◷</span>交付进度</button>
@@ -66,7 +67,7 @@
       <div class="studio-layout campaign-layout">
         <section class="panel brief-panel" aria-labelledby="briefHeading">
           <div class="panel-heading"><h2 id="briefHeading">投放 Brief</h2><span class="mini-label">现场可调整</span></div>
-          <label class="field">品牌名称<input id="brand" value="星巴克" maxlength="80" autocomplete="off"></label>
+          <label class="field">公开研究样本品牌<input id="brand" value="星巴克" maxlength="80" autocomplete="off"></label>
           <label class="field">所属行业
             <select id="industry">
               <option value="银行保险">银行保险</option>
@@ -136,6 +137,16 @@
       </section>
     </section>
 
+    <section class="page" id="planning" aria-label="需求与执行">
+      <div class="page-heading"><div><div class="eyebrow">CAMPAIGN · DELIVERY</div><h1>先定义成功，再安排交付<span class="teal">。</span></h1><p>七要素假设书、施工能力与衡量口径随同一份方案更新。</p></div><button class="btn dark" id="hypothesisExport">导出一页假设书</button></div>
+      <div class="planning-inputs">
+        <section class="panel"><h2>模拟客户需求</h2><label class="field">客户展示名（脱敏）<input id="clientAlias" maxlength="180"></label><label class="field">生意问题与判断依据<textarea id="businessGoal" rows="3" maxlength="1000"></textarea></label><label class="field">本次 campaign 主目标<select id="primaryGoal"><option>认知</option><option>到店</option><option>促销</option><option>拉新</option></select></label><label class="field">如何验证成功<textarea id="successMeasure" rows="3" maxlength="1000"></textarea></label><p class="quiet">需求为团队假设；公开品牌与门店只作研究样本，未使用客户成交价或真实委托资料。</p></section>
+        <section class="panel"><h2>施工与预算假设</h2><p>以下默认值是团队演算输入，须供应商确认；文档只说明夜间作业、雨天停工及单晚上限，并未给出具体产能。</p><div class="two-fields"><label class="field">上刊产能（辆/夜）<input id="upCapacity" type="number" min="1" max="500" step="1"></label><label class="field">下刊产能（辆/夜）<input id="downCapacity" type="number" min="1" max="500" step="1"></label><label class="field">每端天气缓冲（夜）<input id="weatherBuffer" type="number" min="0" max="30" step="1"></label><label class="field">最低共同发布（天）<input id="minPublishDays" type="number" min="1" max="365" step="1"></label><label class="field">素材前置（天）<input id="prepDays" type="number" min="1" max="60" step="1"></label><label class="field">执行预算预留（万元）<input id="executionReserve" type="number" min="0" max="500" step="0.1"></label></div><p class="quiet">预留为内部预算额度，不是供应商报价；0表示尚未设置，不能解释成执行免费。上下刊作业均保守放入库存查询区间，额外施工权限不默认存在。</p><button class="btn dark" id="applyExecutionConstraints">按产能与预留重新组合</button></section>
+      </div>
+      <p><button class="btn" id="clearExecutionConstraints">仅按媒体预算组合</button> 可与加入施工和执行预留约束的结果对比；这两种模式都不代表供应商已经确认。</p>
+      <div id="planningReport"></div>
+    </section>
+
     <section class="page" id="proposal" aria-label="客户方案">
       <div class="page-heading"><div><div class="eyebrow">CLIENT PROPOSAL</div><h1>把决策依据，一起交给客户<span class="teal">。</span></h1><p>品牌理解、门店覆盖、媒介组合、排期与区间报价，汇成一份可交互提案。</p></div><div class="inline-actions"><button class="btn" id="printButton">打印 / 存为 PDF</button><button class="btn dark" id="exportButton">导出 HTML 方案</button></div></div>
       <div id="proposalContent"><div class="panel empty">等待生成方案。</div></div>
@@ -163,6 +174,7 @@
   <dialog id="sourceDialog" aria-labelledby="sourceHeading"><form method="dialog"><div class="panel-heading"><h2 id="sourceHeading">资源与数据依据</h2><button class="icon-btn" aria-label="关闭资源依据">×</button></div><div id="sourceDetail"></div></form></dialog>
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="campaign-engine.js"></script>
+  <script src="campaign-planning.js"></script>
   <script src="campaign-build.js"></script>
   <script src="campaign-data.js"></script>
   <script src="campaign-app.js"></script>

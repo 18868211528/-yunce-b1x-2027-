@@ -364,3 +364,14 @@
   .campaign-studio .proposal-doc table tr{break-inside:avoid}
   .campaign-studio .proposal-doc table thead{display:table-header-group}
 }
+.planning-inputs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:26px}
+#planningReport>.proposal-section{background:#fff;border:1px solid #dce7e2;border-radius:14px;padding:28px;margin:22px 0}
+.campaign-hypothesis th{min-width:145px;text-align:left;background:#eef5f0}
+.execution-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.execution-metrics>div{padding:16px;background:#edf5ef;border-radius:8px}
+.execution-metrics b{font-size:27px;display:block;color:#15574b}
+.execution-metrics span{font-size:12px;display:block;line-height:1.6}
+#planningReport table td,#planningReport table th,.campaign-hypothesis td{white-space:normal;line-height:1.8}
+@media(max-width:1000px){.planning-inputs{grid-template-columns:1fr}.execution-metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){#planningReport>.proposal-section{padding:18px}.campaign-hypothesis th{min-width:105px}.execution-metrics b{font-size:24px}}
+@media print{.execution-metrics{grid-template-columns:repeat(4,1fr)}.execution-metrics b{font-size:20px}}
