@@ -1,0 +1,15 @@
+{
+  "name": "yunce-2027-proposal-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node campaign-server.cjs",
+    "test": "node --test tests/campaign-engine.test.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "playwright": "1.65.1"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "brand": "星巴克",
+  "industry": "食品饮料",
+  "verifiedAsOf": "2026-11-21",
+  "campaign": {
+    "title": "下一站，附近的一杯",
+    "status": "参赛团队策划假设，非品牌已公布活动",
+    "year": 2027,
+    "audience": "上海日常通勤与核心商圈休闲消费人群（策略假设）",
+    "datePolicy": "具体档期以红豆2027年实际可售查询和计价周期为准",
+    "media": ["公交车身", "地铁出入口"]
+  },
+  "brandSources": [
+    {"title": "星巴克在中国", "url": "https://www.starbucks.com.cn/about/", "use": "品牌与全国门店规模背景，不作为上海门店数量"},
+    {"title": "2026年兴趣社区空间焕新", "url": "https://www.starbucks.com.cn/about/news/starbucks-interest-community-space-refresh/", "use": "附近社区和门店体验的品牌传播方向，不认定具体锚点主题空间资质"}
+  ],
+  "anchors": [
+    {
+      "id": "SB-SH-ROASTERY",
+      "name": "星巴克臻选上海烘焙工坊",
+      "district": "静安",
+      "address": "上海市静安区南京西路789号 N110 & 201",
+      "landmarkSearch": "星巴克臻选上海烘焙工坊 南京西路789号",
+      "cluster": "南京西路",
+      "role": "品牌体验地标",
+      "longitude": null,
+      "latitude": null,
+      "coordinateSystem": null,
+      "coordinateSource": "待比赛可视化平台按门店地址定位",
+      "sourceUrl": "https://roastery.starbucks.com.cn/",
+      "sourceKind": "品牌独立门店官网",
+      "verification": "2026-11-21公开官网列示；2027营业及入口定位须复核"
+    },
+    {
+      "id": "SB-SH-SHIMAO",
+      "name": "世茂广场店",
+      "district": "黄浦",
+      "address": "上海市黄浦区南京东路829号G05商铺",
+      "landmarkSearch": "上海世茂广场 南京东路829号",
+      "cluster": "人民广场／南京东路",
+      "role": "商圈消费门店锚点",
+      "longitude": null,
+      "latitude": null,
+      "coordinateSystem": null,
+      "coordinateSource": "待比赛可视化平台按门店地址定位",
+      "sourceUrl": "https://www.starbucks.com.cn/stores?features=&bounds=121.421046%2C31.181496%2C121.728663%2C31.373835",
+      "sourceKind": "品牌当前门店查询页面",
+      "verification": "2026-11-21网页正文列示；2027营业及入口定位须复核"
+    },
+    {
+      "id": "SB-SH-TAIPING",
+      "name": "上海太平金融大厦店",
+      "district": "浦东",
+      "address": "上海市浦东新区银城中路488号一楼103室",
+      "landmarkSearch": "上海太平金融大厦 银城中路488号",
+      "cluster": "陆家嘴",
+      "role": "办公通勤门店锚点",
+      "longitude": null,
+      "latitude": null,
+      "coordinateSystem": null,
+      "coordinateSource": "待比赛可视化平台按门店地址定位",
+      "sourceUrl": "https://www.starbucks.com.cn/stores?features=&bounds=121.421046%2C31.181496%2C121.728663%2C31.373835",
+      "sourceKind": "品牌当前门店查询页面",
+      "verification": "2026-11-21网页正文列示；2027营业及入口定位须复核"
+    },
+    {
+      "id": "SB-SH-XUJIAHUI-ITC",
+      "name": "上海徐家汇中心5F店",
+      "district": "徐汇",
+      "address": "上海市徐汇区虹桥路99号ITC Maison商场5层L5-507室",
+      "landmarkSearch": "徐家汇中心 虹桥路99号",
+      "cluster": "徐家汇",
+      "role": "商圈消费门店锚点",
+      "longitude": null,
+      "latitude": null,
+      "coordinateSystem": null,
+      "coordinateSource": "待比赛可视化平台按门店地址定位",
+      "sourceUrl": "https://www.starbucks.com.cn/stores?features=&bounds=121.421046%2C31.181496%2C121.728663%2C31.373835",
+      "sourceKind": "品牌当前门店查询页面",
+      "verification": "2026-11-21网页正文列示；2027营业及入口定位须复核"
+    },
+    {
+      "id": "SB-SH-YOUYICHENG",
+      "name": "又一城店",
+      "district": "杨浦",
+      "address": "上海市杨浦区淞沪路8号",
+      "landmarkSearch": "百联又一城 淞沪路8号",
+      "cluster": "五角场",
+      "role": "商圈消费门店锚点",
+      "longitude": null,
+      "latitude": null,
+      "coordinateSystem": null,
+      "coordinateSource": "待比赛可视化平台按门店地址定位",
+      "sourceUrl": "https://www.starbucks.com.cn/stores?features=&bounds=121.421046%2C31.181496%2C121.728663%2C31.373835",
+      "sourceKind": "品牌当前门店查询页面",
+      "verification": "2026-11-21网页正文列示；2027营业及入口定位须复核"
+    },
+    {
+      "id": "SB-SH-ZHANGJIANG",
+      "name": "上海张江微电子港店",
+      "district": "浦东",
+      "address": "上海市浦东新区碧波路690号第2幢地上1层104-E单元",
+      "landmarkSearch": "张江微电子港 碧波路690号",
+      "cluster": "张江",
+      "role": "办公通勤门店锚点",
+      "longitude": null,
+      "latitude": null,
+      "coordinateSystem": null,
+      "coordinateSource": "待比赛可视化平台按门店地址定位",
+      "sourceUrl": "https://www.starbucks.com.cn/stores?features=&bounds=121.421046%2C31.181496%2C121.728663%2C31.373835",
+      "sourceKind": "品牌当前门店查询页面",
+      "verification": "2026-11-21网页正文列示；2027营业及入口定位须复核"
+    }
+  ],
+  "limitations": [
+    "坐标尚未取得，不可据此计算距离或声称线路覆盖",
+    "不使用官网门店查询页面的浏览器默认距离值",
+    "所有门店均需在2027正式投放前复核营业状态",
+    "本资料不包含2027曝光、独立触达、到店或销售预测",
+    "比赛平台2023历史人流不能直接等同2027投放效果"
+  ]
+}

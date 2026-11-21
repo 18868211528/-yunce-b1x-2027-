@@ -1,0 +1,448 @@
+{
+  "schemaVersion": "yunce-pricing-rules-v1",
+  "reviewDate": "2026-11-21",
+  "currency": "CNY",
+  "dataNature": "比赛资料包中的区间化脱敏刊例，不是精确报价",
+  "source": {
+    "file": "07-媒体刊例价.xlsx",
+    "sheet": "新云传媒媒体刊例价",
+    "columnMap": {
+      "A": "媒体类型（合并单元格）",
+      "B": "发布线路/位置/级别/形式",
+      "C": "刊例价（区间化口径）",
+      "D": "媒体数量",
+      "E": "发布期",
+      "F": "制作费单价（区间化口径）"
+    },
+    "sourceNoteRef": "A33",
+    "sourceNote": "本表价格已做区间化脱敏处理，非精确刊例，仅供本次赛题使用。"
+  },
+  "scope": {
+    "allowedIndustries": [
+      "银行保险",
+      "食品饮料",
+      "保健品",
+      "私立医院",
+      "乐园（主题公园）"
+    ],
+    "requiredInitialBudgetCny": [
+      1000000,
+      2000000,
+      5000000
+    ],
+    "interactiveBudgetMinCny": 1000000,
+    "interactiveBudgetMaxCny": 5000000,
+    "allowedMedia": [
+      "公交车身",
+      "地铁出入口"
+    ],
+    "campaignDateMin": "2027-01-01",
+    "campaignDateMax": "2027-12-31",
+    "stockSourceRequired": "红豆比赛专户、按目标完整投放档期查询的空车数",
+    "coverageSourceRequired": "新云大数据可视化平台的门店/地标覆盖分析",
+    "trafficReferenceYear": 2023,
+    "trafficReferenceWarning": "历史人流或触达人次只作参考，不自动视为2027年预测、独立人数或去重触达"
+  },
+  "commercialTerms": {
+    "taxIncluded": null,
+    "vatRate": null,
+    "discount": null,
+    "discountStatus": "未获得本场培训确认口径，不能自动应用历史案例折扣",
+    "calendarMonthDefinition": null,
+    "dailyProrationAllowed": null,
+    "productionIncludesInstallation": null,
+    "otherCharges": null,
+    "exactPriceConfirmed": false,
+    "mustDisplay": "刊例区间估算；税费、折扣、计费月定义及其他收费待业务确认"
+  },
+  "standardRates": [
+    {
+      "id": "bus-S",
+      "medium": "公交车身",
+      "grade": "S",
+      "mediaUnit": "辆",
+      "sourceRow": 10,
+      "sourceRef": "C10:F10",
+      "mediaPriceLowCny": 50000,
+      "mediaPriceHighCny": 70000,
+      "period": {
+        "quantity": 1,
+        "unit": "月",
+        "daysEquivalent": null
+      },
+      "production": {
+        "mode": "per_physical_unit_per_production_round",
+        "lowCny": 5000,
+        "highCny": 10000
+      },
+      "matchConditions": [
+        "红豆媒体确认为普通公交车身",
+        "线路等级为S",
+        "媒体形式及报价适用范围人工核对"
+      ]
+    },
+    {
+      "id": "bus-App",
+      "medium": "公交车身",
+      "grade": "A++",
+      "mediaUnit": "辆",
+      "sourceRow": 11,
+      "sourceRef": "C11:F11",
+      "mediaPriceLowCny": 40000,
+      "mediaPriceHighCny": 60000,
+      "period": {
+        "quantity": 1,
+        "unit": "月",
+        "daysEquivalent": null
+      },
+      "production": {
+        "mode": "per_physical_unit_per_production_round",
+        "lowCny": 5000,
+        "highCny": 10000
+      },
+      "matchConditions": [
+        "红豆媒体确认为普通公交车身",
+        "线路等级为A++",
+        "媒体形式及报价适用范围人工核对"
+      ]
+    },
+    {
+      "id": "bus-Ap",
+      "medium": "公交车身",
+      "grade": "A+",
+      "mediaUnit": "辆",
+      "sourceRow": 12,
+      "sourceRef": "C12:F12",
+      "mediaPriceLowCny": 30000,
+      "mediaPriceHighCny": 50000,
+      "period": {
+        "quantity": 1,
+        "unit": "月",
+        "daysEquivalent": null
+      },
+      "production": {
+        "mode": "per_physical_unit_per_production_round",
+        "lowCny": 5000,
+        "highCny": 10000
+      },
+      "matchConditions": [
+        "红豆媒体确认为普通公交车身",
+        "线路等级为A+",
+        "媒体形式及报价适用范围人工核对"
+      ]
+    },
+    {
+      "id": "metro-App",
+      "medium": "地铁出入口",
+      "grade": "A++",
+      "mediaUnit": "点位",
+      "sourceRow": 8,
+      "sourceRef": "C8:F8",
+      "mediaPriceLowCny": 250000,
+      "mediaPriceHighCny": 350000,
+      "period": {
+        "quantity": 1,
+        "unit": "月",
+        "daysEquivalent": null
+      },
+      "production": {
+        "mode": "actual_print_area",
+        "rateCnyPerSquareMeter": 100,
+        "areaSquareMeters": null,
+        "areaRequired": true
+      },
+      "matchConditions": [
+        "红豆媒体确认为一般等级地铁出入口",
+        "等级为A++",
+        "无已确认的特定点位价覆盖",
+        "已取得实际制作面积"
+      ]
+    },
+    {
+      "id": "metro-Ap",
+      "medium": "地铁出入口",
+      "grade": "A+",
+      "mediaUnit": "点位",
+      "sourceRow": 9,
+      "sourceRef": "C9:F9",
+      "mediaPriceLowCny": 150000,
+      "mediaPriceHighCny": 250000,
+      "period": {
+        "quantity": 1,
+        "unit": "月",
+        "daysEquivalent": null
+      },
+      "production": {
+        "mode": "actual_print_area",
+        "rateCnyPerSquareMeter": 100,
+        "areaSquareMeters": null,
+        "areaRequired": true
+      },
+      "matchConditions": [
+        "红豆媒体确认为一般等级地铁出入口",
+        "等级为A+",
+        "无已确认的特定点位价覆盖",
+        "已取得实际制作面积"
+      ]
+    }
+  ],
+  "specificMetroListings": [
+    {
+      "id": "metro-lujiazui-exit-6",
+      "listingName": "陆家嘴地铁6号口",
+      "sourceRow": 27,
+      "sourceRef": "B27:F27",
+      "mediaPriceLowCny": 950000,
+      "mediaPriceHighCny": 1450000,
+      "listedMediaQuantity": 1,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 20000,
+      "productionHighCny": 30000,
+      "automaticMatchAllowed": false,
+      "reason": "需核对红豆具体出口、展示形式及刊例条目一一对应，不能仅凭地铁站名匹配"
+    },
+    {
+      "id": "metro-lujiazui-exit-8",
+      "listingName": "陆家嘴地铁8号口",
+      "sourceRow": 28,
+      "sourceRef": "B28:F28",
+      "mediaPriceLowCny": 950000,
+      "mediaPriceHighCny": 1450000,
+      "listedMediaQuantity": 1,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 20000,
+      "productionHighCny": 30000,
+      "automaticMatchAllowed": false,
+      "reason": "需核对红豆具体出口、展示形式及刊例条目一一对应，不能仅凭地铁站名匹配"
+    },
+    {
+      "id": "metro-renminguangchang-exit-16",
+      "listingName": "人民广场16号口",
+      "sourceRow": 29,
+      "sourceRef": "B29:F29",
+      "mediaPriceLowCny": 700000,
+      "mediaPriceHighCny": 1100000,
+      "listedMediaQuantity": 1,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 10000,
+      "productionHighCny": 20000,
+      "automaticMatchAllowed": false,
+      "reason": "需核对红豆具体出口、展示形式及刊例条目一一对应，不能仅凭地铁站名匹配"
+    },
+    {
+      "id": "metro-jingansi-exit-8-lightboxes",
+      "listingName": "静安寺8号口灯箱",
+      "sourceRow": 30,
+      "sourceRef": "B30:F30",
+      "mediaPriceLowCny": 550000,
+      "mediaPriceHighCny": 800000,
+      "listedMediaQuantity": 3,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 10000,
+      "productionHighCny": 20000,
+      "automaticMatchAllowed": false,
+      "pricingUnitConfirmed": false,
+      "reason": "原表列媒体数量3；总包价/单块价与制作费适用数量需确认，不能直接按单点乘3或把3当可售库存"
+    }
+  ],
+  "specialBusListings": [
+    {
+      "listingName": "双层巴士911",
+      "sourceRow": 13,
+      "mediaPriceLowCny": 200000,
+      "mediaPriceHighCny": 300000,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 10000,
+      "productionHighCny": 20000,
+      "automaticGradeMatchAllowed": false,
+      "reason": "特定车型/线路，不可按普通公交线路等级价直接匹配"
+    },
+    {
+      "listingName": "都市观光线",
+      "sourceRow": 14,
+      "mediaPriceLowCny": 200000,
+      "mediaPriceHighCny": 300000,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 10000,
+      "productionHighCny": 20000,
+      "automaticGradeMatchAllowed": false,
+      "reason": "台账AA等级没有一般等级价；只有确认观光车型和刊例条目对应后才能使用"
+    },
+    {
+      "listingName": "南京路铛铛车（封闭/敞篷）",
+      "sourceRow": 15,
+      "mediaPriceLowCny": 150000,
+      "mediaPriceHighCny": 250000,
+      "period": {
+        "quantity": 1,
+        "unit": "月"
+      },
+      "productionLowCny": 20000,
+      "productionHighCny": 30000,
+      "automaticGradeMatchAllowed": false,
+      "reason": "特定媒体形式，需核对赛题公交车身范围与实际资源匹配"
+    }
+  ],
+  "calculation": {
+    "busOneCreativeFormula": "mediaLow = physicalVehicleCount * confirmedBillingMonths * mediaPriceLowCny; mediaHigh = physicalVehicleCount * confirmedBillingMonths * mediaPriceHighCny; productionLow = physicalVehicleCount * productionLowCny; productionHigh = physicalVehicleCount * productionHighCny; subtotalLow/High = mediaLow/High + productionLow/High",
+    "metroOneCreativeFormula": "mediaLow/High = physicalPointCount * confirmedBillingMonths * mediaPriceLow/HighCny; production = 100 * sum(actualPrintAreaSquareMeters of selected points); subtotalLow/High = mediaLow/High + production",
+    "repeatProductionRule": "同一素材同一物理媒体在连续刊期内制作一次；换稿、换车、换点、重新施工等应另行核实制作轮次，不能自动免除或重复按月计入",
+    "zeroQuantityRule": "物理媒体数量为0时，该资源媒介费与本次制作费均为0；不要保留幽灵制作费",
+    "taxRule": "税费口径未确认时不能把区间合计称为含税全包价；不得自行加6%或其他税率",
+    "discountRule": "未有明确授权的折扣值及适用范围时保持原刊例区间，不自动取历史客户折扣",
+    "intervalRule": "默认同时展示下限与上限；中位数仅在明确标为测算假设时展示，不能伪装成精确报价",
+    "budgetSafetyRule": "自动组合以已知费用上界检验预算；只在制作面积、价格映射和其他必要收费完整时，才能标记为已知口径预算内。未确认税费和其他收费仍须提示。",
+    "incompleteCostRule": "面积或价格映射缺失时允许候选展示，但禁止把该项作为0元成本投入自动预算最优解；应标记待报价/成本不完整",
+    "periodRule": "源表1月不得改为1周或固定28/30天。计费月定义及非整月折算需供应商确认；未确认前不作按日等比例推算",
+    "inventoryRule": "数量以同一目标完整档期的红豆空车数为上限；不得把某一天空位外推整个2027年，不得把同一物理资源多月库存简单相加当作同时可售数量"
+  },
+  "staticInventoryReference": {
+    "file": "01-公交媒体台账.xlsx",
+    "sheet": "公交媒体台账",
+    "rows": 431,
+    "asOfQueryDate": "2026-11-13",
+    "asOfQueryDateSource": "字段说明!A13",
+    "timeScope": "单日",
+    "is2027Availability": false,
+    "availabilityField": "空位数",
+    "rebuildAvailabilityFromOtherColumns": false,
+    "reason": "源说明指出空位已综合保养、合同、预定和续约保护；以该列为准",
+    "gradeCounts": {
+      "A++": 200,
+      "A+": 181,
+      "S": 48,
+      "AA": 2
+    },
+    "unmatchedGeneralGrade": [
+      "AA"
+    ],
+    "joinRequirement": "线路名称须规范化并保留运营公司、媒体形式和原始行定位；禁止按模糊子串把100与1001合并；重名线路需复核"
+  },
+  "evidenceRequirements": [
+    "每条入选资源保存红豆查询起止日、查询/导出时间、系统原始行ID或稳定字段组合与空车数",
+    "每条入选资源保存门店/地标覆盖分析的查询点、坐标来源、半径、媒体类型和导出定位",
+    "每条价格保存刊例文件、工作表、单元格、适用等级/点位和制作费口径",
+    "历史2023人流须保留月份、单位和平台查询定位，不作2027预测或去重人数",
+    "特定点位、特殊车型、未知等级不得自动套一般等级价"
+  ],
+  "contractReview": {
+    "files": [
+      "M3-直客合同-脱敏版.pdf",
+      "M3-4A框架-脱敏版.pdf",
+      "M3-4A订单-脱敏版.pdf"
+    ],
+    "status": "三份扫描件已逐页视觉核对：直客4页、框架16页、订单1页；合同仅作样本参考",
+    "generalRule": "履约补偿、监拍、付款、变更、免责及税费须按2027实际签署合同、订单和归责判断，不能把任何样本条款推广为统一承诺。",
+    "frameworkValidity": {
+      "sourceRef": "M3-4A框架-脱敏版.pdf p1、p11第17条",
+      "from": "2026-01-01",
+      "to": "2026-12-31",
+      "appliesAutomaticallyTo2027": false
+    },
+    "compensationExamples": [
+      {
+        "sourceRef": "M3-直客合同-脱敏版.pdf p3 第四条第4项",
+        "summary": "车辆碰擦、画面损坏、车辆调动等影响正常发布或减少日期时，及时修复，并按样本约定损一补一",
+        "unconditionalGuaranteeAllowed": false
+      },
+      {
+        "sourceRef": "M3-4A框架-脱敏版.pdf p2–4、p7",
+        "summary": "乙方过错引起延迟、制作安装或维修不合格等具体条件下，存在误一补二或赔偿补播约定，须按具体条款和归责执行",
+        "unconditionalGuaranteeAllowed": false
+      }
+    ],
+    "monitoringExample": {
+      "sourceRef": "M3-4A框架-脱敏版.pdf p7",
+      "onAirProof": "上刊当天或第二天提供带当日报头的照片",
+      "highQualityOnAirPhotos": "上刊后5个工作日内",
+      "offAirPhotos": "下刊后5个工作日内",
+      "creativeChangeProof": "换画面当天或第二天",
+      "monthlyMonitoring": "长投超过1月可约定月度监测",
+      "otherRequirements": "具体订单另约，不能与客户brief样本的当日承诺混同"
+    },
+    "taxExamples": {
+      "sourceRef": [
+        "M3-直客合同-脱敏版.pdf p2",
+        "M3-4A框架-脱敏版.pdf p5"
+      ],
+      "sampleVatRate": 0.06,
+      "applyTo2027RateCardByDefault": false,
+      "reason": "特定2026合同样本出现6%专票，不构成2027区间刊例的税费口径确认"
+    },
+    "orderExample": {
+      "sourceRef": "M3-4A订单-脱敏版.pdf p1",
+      "dateContext": "2026年5月户外大牌排期样例",
+      "installationLeadTimeExample": "2–3天/批量等说明仅是该样例，不适合作为所有公交或地铁资源固定施工产能"
+    },
+    "productionExample": {
+      "sourceRef": "M3-直客合同-脱敏版.pdf p1–2",
+      "summary": "公交按辆列数量；制作安装费按每辆；更换画面有额外费用；先付款后安排制作。实际发布日期依据首辆或分批施工照片与上刊报告核定，不能视为所有车同日上线。"
+    },
+    "paymentExample": {
+      "sourceRef": "M3-4A框架-脱敏版.pdf p5–6",
+      "summary": "月末结束后7工作日内提供收款通知及凭证；付款同时涉及月末后90天、客户款项到账及凭证发票完整等前提，不能推广为一般月结或无条件90天账期。"
+    },
+    "changeAndWeatherExample": {
+      "sourceRef": [
+        "M3-直客合同-脱敏版.pdf p3",
+        "M3-4A框架-脱敏版.pdf p4、p10"
+      ],
+      "summary": "换画面需协商费用；部分停工可能顺延。天气施工风险与合同意义不可抗力不可自动等同，通知、举证、补延或终止均以最终合同为准。"
+    }
+  },
+  "syntheticCalculationTests": [
+    {
+      "purpose": "费用算法校验，非库存或投放建议",
+      "rateId": "bus-App",
+      "vehicleCount": 3,
+      "confirmedBillingMonths": 1,
+      "productionRounds": 1,
+      "expectedKnownSubtotalLowCny": 135000,
+      "expectedKnownSubtotalHighCny": 210000
+    },
+    {
+      "purpose": "验证制作费不按月重复，非库存或投放建议",
+      "rateId": "bus-App",
+      "vehicleCount": 3,
+      "confirmedBillingMonths": 2,
+      "productionRounds": 1,
+      "expectedKnownSubtotalLowCny": 255000,
+      "expectedKnownSubtotalHighCny": 390000
+    },
+    {
+      "purpose": "零数量无幽灵制作费",
+      "rateId": "bus-App",
+      "vehicleCount": 0,
+      "confirmedBillingMonths": 1,
+      "productionRounds": 1,
+      "expectedKnownSubtotalLowCny": 0,
+      "expectedKnownSubtotalHighCny": 0
+    },
+    {
+      "purpose": "未知面积不视为0成本",
+      "rateId": "metro-Ap",
+      "pointCount": 1,
+      "confirmedBillingMonths": 1,
+      "actualProductionAreaSquareMeters": null,
+      "expectedResult": "production_cost_incomplete; cannot certify all-in budget or enter cost-complete automatic optimization"
+    }
+  ]
+}
